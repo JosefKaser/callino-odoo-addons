@@ -198,6 +198,7 @@ function openerp_rksv_screens(instance, module) {
                 paymentlines: order.get_paymentlines()
             };
             this.pos.proxy.print_receipt(QWeb.render('XmlReceipt',env));
+            order._printed = true;
         },
         print: function() {
            var self = this;
