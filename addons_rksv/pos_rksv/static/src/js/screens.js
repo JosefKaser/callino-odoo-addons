@@ -180,8 +180,11 @@ function openerp_rksv_screens(instance, module) {
             var self = this;
             if(self.pos.config.iface_print_via_proxy){
                 self.print_proxy();
+                self.finishOrder();
+                self.close();
+            } else {
+                this._super();
             }
-            this._super();
         },
         should_auto_print: function() {
             if (!this.pos.config.iface_rksv)
