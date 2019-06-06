@@ -176,16 +176,6 @@ function openerp_rksv_screens(instance, module) {
      Do extend Receipt screen - we do not allow the receipt to not get printed !
      */
     screens.ReceiptScreenWidget.include({
-        show: function() {
-            var self = this;
-            if(self.pos.config.iface_print_via_proxy){
-                self.print_proxy();
-                self.finishOrder();
-                self.close();
-            } else {
-                this._super();
-            }
-        },
         should_auto_print: function() {
             if (!this.pos.config.iface_rksv)
                 return this._super();
@@ -204,11 +194,16 @@ function openerp_rksv_screens(instance, module) {
             order._printed = true;
         },
         print: function() {
-           var self = this;
-           self.print_web_delayed = this._super;
-           setTimeout(function() {
-               self.print_web_delayed();
-           }, 1000);
+            var self = this;
+            if(self.pos.config.iface_print_via_proxy){
+                self.print_proxy();
+                self.finishOrder();
+            } else {
+                self.print_web_delayed = this._super;
+                setTimeout(function() {
+                    self.print_web_delayed();
+                }, 1000);
+            }
         },
     });
 
