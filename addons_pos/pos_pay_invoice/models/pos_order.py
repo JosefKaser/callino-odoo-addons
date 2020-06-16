@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 class PosOrderLine(models.Model):
     _inherit = "pos.order.line"
 
-    invoice_id = fields.Many2one('account.invoice', string='Invoice', readonly=True)
+    invoice_id = fields.Many2one('account.move', string='Invoice', readonly=True)
 
     @api.model
     def create(self, vals):
@@ -24,11 +24,10 @@ class PosOrderLine(models.Model):
 class PosOrder(models.Model):
     _inherit = "pos.order"
 
-    invoice_id = fields.Many2one('account.invoice', string='Invoice', readonly=True)
+    invoice_id = fields.Many2one('account.move', string='Invoice', readonly=True)
 
-    @api.multi
     def action_pos_order_paid(self):
         res = super(PosOrder, self).action_pos_order_paid()
         if self.invoice_id:
-            self.state = 'invoiced'
+            self.invoice_id.invoice_payment_state = 'paid'
         return res

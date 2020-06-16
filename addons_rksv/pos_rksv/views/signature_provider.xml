@@ -84,7 +84,6 @@
         <record id="action_signature_provider" model="ir.actions.act_window">
             <field name="name">Signature Provider</field>
             <field name="res_model">signature.provider</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
         </record>
         

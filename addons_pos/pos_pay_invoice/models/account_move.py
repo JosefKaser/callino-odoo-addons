@@ -6,8 +6,8 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+class AccountMove(models.Model):
+    _inherit = 'account.move'
 
     pos_order_ids = fields.One2many(
         comodel_name='pos.order',
@@ -22,7 +22,6 @@ class AccountInvoice(models.Model):
         store=True,
         readonly=True,
     )
-
 
     @api.depends('pos_order_ids')
     def _retrieve_pos_data(self):

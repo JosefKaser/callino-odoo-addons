@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'MPD Six Payment Terminal',
-    'version': '12.0.0.1',
+    'version': '13.0.0.1',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'MPD Six Payment Terminal Integration Odoo POS',

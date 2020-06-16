@@ -18,7 +18,6 @@ _logger = logging.getLogger(__name__)
 class POSConfig(models.Model):
     _inherit = 'pos.config'
 
-    @api.multi
     def action_dep_export(self):
         if not self.env.user._is_superuser():
             raise UserError('This feature is not yet available for everyone. Please contact your Odoo superadmin to fulfill this task.')
@@ -81,7 +80,6 @@ class POSConfig(models.Model):
             else:
                 attachments.create(attach_vals)
 
-    @api.multi
     def open_ui(self):
         for config in self:
             if not self.iface_rksv:
@@ -97,7 +95,6 @@ class POSConfig(models.Model):
                 raise UserError("All configuration products must be correctly configured before opening a PoS Session!")
         return super(POSConfig, self).open_ui()
 
-    @api.multi
     def _calc_cashregisterid(self):
         for config in self:
             _logger.info('do generate new uuid1 based uuid')
@@ -247,15 +244,12 @@ class POSConfig(models.Model):
         else:
             return False
 
-    @api.multi
     def create_cashregisterid(self):
         self._calc_cashregisterid()
 
-    @api.multi
     def set_failure(self):
         self.state = 'posbox_failed'
 
-    @api.multi
     def set_active(self):
         self.state = 'active'
         # Do generate a cashregisterid if there is not id attached already

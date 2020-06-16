@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <!-- Extend the PosTicket -->
-    <t t-extend="PosTicket">
-    </t>
 
-    <!-- Extend the XmlReceipt -->
-    <t t-extend="XmlReceipt" >
+    <!-- Extend the OrderReceipt -->
+    <t t-extend="OrderReceipt" >
         <!-- Shop Name -->
         <t t-jquery="t[t-if='receipt.shop.name']" t-operation="replace">
             <t t-if='receipt.shop.name &amp;&amp; receipt.config.print_shop_name'>

@@ -21,21 +21,9 @@
             </t>
         </t>
     </t>
-    <!-- PosTicket -->
-    <t t-extend="PosTicket">
-        <t t-jquery="tr[t-foreach*='orderlines']" t-operation="append">
-            <t t-if="orderline.product_ref_text">
-                <tr>
-                    <td>
-                        Ref.: <t t-esc="orderline.product_ref_text"/>
-                    </td>
-                </tr>
-            </t>
-        </t>
-    </t>
 
-    <!-- XmlReceipt -->
-    <t t-extend="XmlReceipt">
+    <!-- OrderReceipt (PosTicket and XmlReceipt seem to be merged into this) -->
+    <t t-extend="OrderReceipt">
         <t t-jquery="t[t-foreach*='receipt.orderlines']" t-operation="append">
             <t t-if="line.product_ref_text">
                 <line>

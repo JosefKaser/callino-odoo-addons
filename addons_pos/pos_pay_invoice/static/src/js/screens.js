@@ -129,11 +129,11 @@ odoo.define('pos_pay_invoice.screens', function (require) {
         reload_invoices: function() {
             var self = this;
             var def  = new $.Deferred();
-            var fields = _.find(this.pos.models,function(model){ return model.model === 'account.invoice'; }).fields;
+            var fields = _.find(this.pos.models,function(model){ return model.model === 'account.move'; }).fields;
             rpc.query({
-                'model': 'account.invoice',
+                'model': 'account.move',
                 'method': 'search_read',
-                'domain': ['&', ['state', '=', 'open'], ['pos_order_id', '=', false], ['type', '=', 'out_invoice']],
+                'domain': ['&', ['state', '=', 'posted'], ['pos_order_id', '=', false], ['type', '=', 'out_invoice'], ['invoice_payment_state', '=', 'not paid']],
                 'fields': fields,
             }).then(
                 function(invoices){

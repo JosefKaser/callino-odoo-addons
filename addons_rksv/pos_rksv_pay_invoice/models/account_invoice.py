@@ -7,7 +7,7 @@ _logger = logging.getLogger(__name__)
 
 
 class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+    _inherit = 'account.move'
 
     qr_code_image = fields.Binary(
         string="QR Code",

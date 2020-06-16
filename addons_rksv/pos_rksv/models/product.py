@@ -9,7 +9,6 @@ _logger = logging.getLogger(__name__)
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    @api.multi
     @api.depends('taxes_id', 'taxes_id.rksv_tax', 'taxes_id.rksv_tax_category')
     def _compute_rksv_tax_mapping_correct(self):
         for template in self:

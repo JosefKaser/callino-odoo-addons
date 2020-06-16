@@ -91,7 +91,6 @@ class POSOrder(models.Model):
         readonly=True
     )
 
-    @api.multi
     @api.depends('signatureSerial')
     def _compute_provider(self):
         for order in self:
