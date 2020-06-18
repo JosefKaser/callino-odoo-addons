@@ -26,7 +26,7 @@ odoo.define('pos_rksv.devices', function (require) {
                         if (self.get('status').status !== 'connecting') {
                             self.set_connection_status('disconnected');
                         }
-                    }).always(function () {
+                    }).then(function () {
                     setTimeout(status, 5000);
                 });
             }

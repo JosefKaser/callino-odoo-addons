@@ -59,7 +59,7 @@ odoo.define('pos_rksv.pos', function (require) {
                     args: [cardinfos, {
                         'pos_config_id': self.config.id,
                     }]
-                }).always(
+                }).then(
                     function finish(result) {
                         signature.pos.signature_update = false;
                     }
@@ -85,7 +85,7 @@ odoo.define('pos_rksv.pos', function (require) {
                         model: 'signature.provider',
                         method: 'update_status',
                         args: [signature.attributes]
-                    }).always(
+                    }).then(
                         function finish(result) {
                             signature.pos.signature_update = false;
                         }
@@ -106,7 +106,7 @@ odoo.define('pos_rksv.pos', function (require) {
                 self.config.state = state;
             });
             // Things to do when all models are loaded
-            this.ready.done(function () {
+            this.ready.then(function () {
                 console.log('All data is loaded - so do my work...');
                 // Check state from config - set it as my own state
                 if (self.config.iface_rksv)

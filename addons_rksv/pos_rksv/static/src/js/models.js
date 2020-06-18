@@ -11,7 +11,18 @@ odoo.define('pos_rksv.models', function (require) {
         for (var i = 0; i < pmodels.length; i++) {
             if (pmodels[i].model === modelname) {
                 // We do merge the content of the second array in the first one
-                Array.prototype.push.apply(pmodels[i]['domain'], domain);
+                // Domain is or could be a function
+                if (typeof(pmodels[i].domain) === 'function') {
+                    pmodels[i].orig_domain = pmodels[i].domain;
+                    pmodels[i].append_domain = domain;
+                    pmodels[i].domain = function(self) {
+                        var domain = this.orig_domain(self);
+                        Array.prototype.push.apply(domain, this.append_domain);
+                        return domain;
+                    };
+                } else {
+                    Array.prototype.push.apply(pmodels[i]['domain'], domain);
+                }
             }
         }
     };
@@ -159,7 +170,7 @@ odoo.define('pos_rksv.models', function (require) {
                     proxyDeferred.reject("Abfrage des Status beim BMF ist fehlgeschlagen");
                     return response;
                 }
-            ).always(function(response) {
+            ).then(function(response) {
                 self.setBMFStatus(response);
             });
             return proxyDeferred;
@@ -275,8 +286,9 @@ odoo.define('pos_rksv.models', function (require) {
     });
 
     /*
-     Do add the journal type to the paymentlines
+     Do add the journal type to the paymentlines - why the hell ????
      */
+    /*
     var PaymentlineSuper = models.Paymentline;
     models.Paymentline = models.Paymentline.extend({
         export_as_JSON: function () {
@@ -286,5 +298,5 @@ odoo.define('pos_rksv.models', function (require) {
             res['type'] = this.cashregister.journal.type;
             return res;
         }
-    });
+    });*/
 });

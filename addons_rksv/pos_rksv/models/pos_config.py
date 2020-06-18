@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
+from odoo.addons.point_of_sale.models.pos_config import PosConfig
 from odoo.exceptions import UserError
 import pytz
 from datetime import datetime
@@ -13,6 +14,23 @@ except ImportError:
     import json
 
 _logger = logging.getLogger(__name__)
+
+
+# We have to monkey patch this here to allow the write for bmf_gemeldet and state
+def pos_config_write(self, vals):
+    if 'bmf_gemeldet' in vals or 'state' in vals or 'signature_provider_id' in vals:
+        return super(PosConfig, self).write(vals)
+    opened_session = self.mapped('session_ids').filtered(lambda s: s.state != 'closed')
+    if opened_session:
+        raise UserError(_('Unable to modify this PoS Configuration because there is an open PoS Session based on it.'))
+    result = super(PosConfig, self).write(vals)
+
+    self.sudo()._set_fiscal_position()
+    self.sudo()._check_modules_to_install()
+    self.sudo()._check_groups_implied()
+    return result
+
+PosConfig.write = pos_config_write
 
 
 class POSConfig(models.Model):

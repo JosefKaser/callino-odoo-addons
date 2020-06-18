@@ -253,8 +253,8 @@
                 <p class="title">Titel</p>
                 <div class="message" />
                 <div class="passwd_input">
-                    <label for="pass_input_operation">Password (PoS Admin)</label>
-                    <input id="pass_input_operation" class="pos_admin_passwd" type="password"/>
+                    <label for="pass_input_register">Password (PoS Admin)</label>
+                    <input id="pass_input_register" class="pos_admin_passwd" type="password"/>
                 </div>
                 <div class="startreceipt_div" style="display:none;">
                     <h2>Daten</h2>
