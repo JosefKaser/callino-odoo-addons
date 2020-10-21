@@ -16,10 +16,13 @@
                         <field name="state" widget="statusbar" statusbar_visible="setup,active,inactive,deprecated,failure" statusbar_colors='{"failure" : "red"}' nolabel="1"/>
                     </header>
                 </xpath>
-                <field name="iface_cashdrawer" position="after">
+                <xpath expr="//div[hasclass('pos_iot_config')]" position="inside">
                     <field name="rksv_at" invisible="True"/>
-                    <field name="iface_rksv" attrs="{'readonly': [('rksv_at', '=', True), ('iface_rksv', '=', True)], 'invisible': [('rksv_at', '=', False), ('iface_rksv', '=', False)]}"/>
-                </field>
+                    <div class="row">
+                        <label string="RKSV" for="iface_rksv" class="col-lg-4 o_light_label"/>
+                        <field name="iface_rksv" attrs="{'readonly': [('rksv_at', '=', True), ('iface_rksv', '=', True)], 'invisible': [('rksv_at', '=', False), ('iface_rksv', '=', False)]}"/>
+                    </div>
+                </xpath>
                 <xpath expr="//div[@id='receipt']" position="before">
                     <group string="Registrierkassenverordnung (Österreich)" attrs="{'invisible': [('iface_rksv', '=', False)]}">
                         <group>
