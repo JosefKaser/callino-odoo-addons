@@ -31,7 +31,7 @@ POS Receipt Printing
     'qweb': [
         'static/src/xml/receipt.xml'
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     "external_dependencies": {
         "python": [],

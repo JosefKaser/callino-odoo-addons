@@ -4,12 +4,10 @@
 odoo.define('pos_rksv.pos', function (require) {
     "use strict";
 
-    var chrome = require('point_of_sale.chrome');
     var models = require('point_of_sale.models');
     // We do require the signature model and collection
     require('pos_rksv.models');
     // Get reference to my RKSV Popup Widgets - you get the reference by using the gui popup handler functions !
-    require('pos_rksv.popups');
     var rpc = require('web.rpc');
     var rksv = require('pos_rksv.rksv');
 

@@ -272,3 +272,6 @@ class POSConfig(models.Model):
         self.state = 'active'
         # Do generate a cashregisterid if there is not id attached already
         self._calc_cashregisterid()
+
+    def set_inactive(self):
+        self.state = 'inactive'

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ul[hasclass('info-list')]//li[hasclass('info')]" t-operation="after">
+            <t t-if="props.line.get_product().product_ref">
+                <li class="ref">
+                    <em>Reference: </em>
+                    <t t-if="props.line.get_product().product_ref_textarea">
+                        <textarea class="pro_ref" type="text" name="pro_ref"><t t-raw="props.line.get_product_reference() or ''"/></textarea>
+                    </t>
+                    <t t-else="">
+                        <input class="pro_ref" type="text" name="pro_ref" t-att-value="props.line.get_product_reference()" t-on-change="captureProductRefChange"/>
+                    </t>
+                </li>
+            </t>
+            <t t-if="!props.line.get_product().product_ref &amp;&amp; props.line.get_product_reference()">
+                <li class="ref">
+                    <em>Reference: </em><t t-raw="props.line.get_product_reference()"/>
+                </li>
+            </t>
+        </xpath>
+    </t>
+
+    <!-- OrderReceipt (PosTicket and XmlReceipt seem to be merged into this) -->
+    <t t-extend="OrderReceipt">
+        <t t-jquery="t[t-foreach*='receipt.orderlines']" t-operation="append">
+            <t t-if="line.product_ref_text">
+                <line>
+                    <left>
+                        Ref.: <t t-esc="line.product_ref_text"/>
+                    </left>
+                </line>
+            </t>
+        </t>
+    </t>
+</templates>

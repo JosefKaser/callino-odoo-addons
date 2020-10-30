@@ -23,6 +23,6 @@ MPD Integration Six Payment
         'views/pos_config.xml',
     ],
     'qweb': ['static/src/xml/pos.xml'],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
 }

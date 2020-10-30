@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Registrierkasse Österreich',
-    'version': '13.0.0.1',
+    'version': '14.0.1.0',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Registrierkassenpflicht Modul für Österreich',
@@ -35,7 +35,10 @@ Registrierkassen Modul für die Anforderungen der Österreichischen Registrierka
     ],
     'qweb': [
         'static/src/xml/receipt.xml',
-        'static/src/xml/rksv.xml'
+        'static/src/xml/rksv.xml',
+        'static/src/xml/Chrome.xml',
+        'static/src/xml/ChromeWidgets/RKSVStatusWidget.xml',
+        'static/src/xml/Screens/RKSVStatusScreen.xml'
     ],
     'installable': True,
     'auto_install': False,

@@ -16,74 +16,14 @@ odoo.define('pos_rksv.chrome', function (require) {
 
         }
     });
-    var RKSVStatusWidget = chrome.StatusWidget.extend({
-        template: 'RKSVStatusIndicatorWidget',
-        // Possible status values
-        status: ['connected','connecting','disconnected','warning','failure','setup','inactive'],
-        set_smart_status: function (status) {
-            var self = this;
-            var mode = self.pos.get('cashbox_mode');
-            if (mode == 'signature_failed') {
-                this.set_status('failure', 'Ausfall SE');
-            } else if (mode == 'posbox_failed') {
-                this.set_status('failure', 'Ausfall PosBox');
-            } else {
-                if (status.status === 'connected' && (!(self.pos.config.state === "setup" || self.pos.config.state === "failure" || self.pos.config.state === "inactive"))) {
-                    var rksvstatus = status.drivers.rksv ? status.drivers.rksv.status : false;
-                    if (!rksvstatus) {
-                        this.set_status('disconnected', '');
-                    } else if (rksvstatus == 'connected') {
-                        this.set_status('connected', '');
-                    } else {
-                        this.set_status(rksvstatus, '');
-                    }
-                } else if (status.status === 'connected' && (self.pos.config.state === "setup")) {
-                    this.set_status('setup', 'Setup');
-                } else if (status.status === 'connected' && (self.pos.config.state === "failure")) {
-                    this.set_status('failure', 'Ausfall');
-                } else if (status.status === 'connected' && (self.pos.config.state === "inactive")) {
-                    this.set_status('inactive', 'Deaktiviert');
-                } else {
-                    this.set_status(status.status, '');
-                }
-            }
-        },
-        start: function () {
-            var self = this;
-            if (!self.pos.config.iface_rksv) {
-                return this._super();
-            }
-            this.set_smart_status(this.pos.proxy.get('status'));
-            this.pos.proxy.on('change:status', this, function (eh, status) {
-                self.set_smart_status(status.newValue);
-            });
-            this.$el.click(function () {
-                // Do Open the Main RKSV Status Popup
-                self.pos.gui.show_screen('rksv_status', {
-                    'stay_open': true
-                });
-            });
-        },
-        renderElement: function() {
-            if (this.pos.config.iface_rksv) {
-                return this._super();
-            }
-        }
 
-    });
-
-    /*
-    We do regsiter the RKSV Status Widget
-     */
-    chrome.Chrome.prototype.widgets.unshift({
-        'name':   'signature',
-        'widget': RKSVStatusWidget,
-        'append':  '.pos-rightheader'
-    });
 
     /*
     Lets extend the Debug Widget - so we can add our own functions here
      */
+
+    // TODO
+    /*
     var DebugWidget = chrome.DebugWidget.extend({
         start: function () {
             // Supercall using prototype
@@ -142,5 +82,7 @@ odoo.define('pos_rksv.chrome', function (require) {
         'widget': DebugWidget,
         'append':  '.pos-content'
     });
+    */
+     */
 });
 

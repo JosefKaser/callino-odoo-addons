@@ -20,7 +20,7 @@ Registrierkasse Österreich - Rechnung
     ],
     'qweb': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': True,
     "external_dependencies": {
         "python": [],

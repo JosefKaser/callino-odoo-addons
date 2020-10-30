@@ -49,7 +49,9 @@
     font-size: 0.7em;
     color: red;
 }
-
+.popup-rksv {
+    max-width: 100% !important;
+}
 .popup.content label,
 .popup.content input,
 .popup.popup-rksv .clearfix label,

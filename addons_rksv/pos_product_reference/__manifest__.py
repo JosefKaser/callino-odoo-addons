@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "POS Product Reference",
-    'version': '13.0.0.1',
+    'version': '14.0.1.0',
     'category': 'Point of Sale',
     'sequence': 6,
     "summary": "Druckt einen Referenz Text zum Produkt",
@@ -16,6 +16,7 @@ POS Product Reference
 
     *  31.01.2017: Erstellt - GB
     *  25.02.2017: Portiert auf Odoo v10 - WP
+    *  29.10.2020: Portiert auf Odoo v14 - owl - WP
 
 """,
     "data": [
@@ -24,7 +25,7 @@ POS Product Reference
             'views/product_template.xml',
     ],
     'qweb': [
-        'static/src/xml/pos_product_ref.xml',
+        'static/src/xml/Orderline.xml',
     ],
     "demo": [],
     "installable": True,

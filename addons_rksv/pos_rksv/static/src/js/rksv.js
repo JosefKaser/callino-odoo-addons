@@ -4,6 +4,7 @@ odoo.define('pos_rksv.rksv', function (require) {
     var core = require('web.core');
     // We do require the signature model and collection
     require('pos_rksv.models');
+    const { Gui } = require('point_of_sale.Gui');
     var models = require('point_of_sale.models');
     var QWeb = core.qweb;
     var rpc = require('web.rpc');

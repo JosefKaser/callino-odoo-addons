@@ -285,18 +285,4 @@ odoo.define('pos_rksv.models', function (require) {
         }
     });
 
-    /*
-     Do add the journal type to the paymentlines - why the hell ????
-     */
-    /*
-    var PaymentlineSuper = models.Paymentline;
-    models.Paymentline = models.Paymentline.extend({
-        export_as_JSON: function () {
-            var self = this;
-            console.log('export payment line to json - do add type parameter');
-            var res = PaymentlineSuper.prototype.export_as_JSON.call(self);
-            res['type'] = this.cashregister.journal.type;
-            return res;
-        }
-    });*/
 });

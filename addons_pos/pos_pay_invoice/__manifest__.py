@@ -26,7 +26,7 @@ Pay invoice directly on in pos session
     'qweb': [
         'static/src/xml/invoice.xml'
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     "external_dependencies": {
         "python": [],

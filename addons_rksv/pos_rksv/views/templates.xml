@@ -7,10 +7,17 @@
               <script type="text/javascript" src="/pos_rksv/static/src/js/models.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/pos.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/rksv.js"></script>
-              <script type="text/javascript" src="/pos_rksv/static/src/js/chrome.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/devices.js"></script>
-              <script type="text/javascript" src="/pos_rksv/static/src/js/popups.js"></script>
-              <script type="text/javascript" src="/pos_rksv/static/src/js/screens.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Chrome.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVPopupWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RegisterCashboxPopupWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVSProviderAusfallPopupWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVSProviderWiederinbetriebnahmePopupWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVFAPopupWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/ChromeWidgets/RKSVStatusWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/RKSVPaymentScreen.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/ReceiptScreenWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/RKSVStatusScreen.js"></script>
               <link href="/pos_rksv/static/src/css/rksv.css" rel="stylesheet"/>
           </xpath>
         </template>
