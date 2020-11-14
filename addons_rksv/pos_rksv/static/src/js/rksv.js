@@ -622,8 +622,14 @@ odoo.define('pos_rksv.rksv', function (require) {
         },
         register_cashbox: function() {
             var self = this;
-            var op_popup = this.pos.gui.popup_instances.rksv_register_cashbox_widget;
-            op_popup.show({}, 'Kasse mit PosBox verknüpfen', 'Verknüpfen');
+            //var op_popup = this.pos.gui.popup_instances.rksv_register_cashbox_widget;
+
+            Gui.showPopup('RegisterCashboxPopupWidget', {
+                'title': 'Kasse mit PosBox verknüpfen',
+                'exec_button_title': 'Verknüpfen',
+                'kundeninfo': '',
+            });
+            /*
             // First - do disable old event handlers
             op_popup.$('.execute_button').off();
             // Then install new click handler
@@ -665,47 +671,49 @@ odoo.define('pos_rksv.rksv', function (require) {
                 op_popup.$('.execute_button').hide();
                 op_popup.$('.close_button').show();
             });
+
+             */
         },
+        /*
         bmf_kasse_registrieren: function() {
             var self = this;
-            var op_popup = this.pos.gui.popup_instances.rksv_popup_widget;
-            op_popup.show({}, 'Kasse beim BMF registrieren', 'Registrieren');
-            // First - do disable old event handlers
-            op_popup.$('.execute_button').off();
-            // Then install new click handler
-            op_popup.$('.execute_button').click(function() {
-                op_popup.loading('Daten an BMF übermitteln');
-                if (self.check_proxy_connection()){
-                    var local_params = {
-                        'name': self.pos.config.name
-                    };
-                    self.proxy_rpc_call(
-                        '/hw_proxy/rksv_kasse_registrieren',
-                        Object.assign(local_params, self.get_rksv_info(), self.get_bmf_credentials()),
-                        self.timeout
-                    ).then(
-                        function done(response) {
-                            if (response.success == false) {
-                                op_popup.failure(response.message);
-                                // Request a status update here
-                                self.pos.rksv.update_bmf_rk_status();
-                            } else {
-                                op_popup.success(response.message);
-                                // Request a status update here
-                                self.pos.rksv.update_bmf_rk_status();
+            Gui.showPopup('RKSVPopupWidget', {
+                'title': 'Kasse beim BMF registrieren',
+                'body': 'Registrierkasse wird über Finanzonline registriert.',
+                'exec_button_title': 'Registrieren',
+                'kundeninfo': '',
+                'execute': function(popup) {
+                    popup.state.loading = 'Registrierung läuft...';
+                    if (self.check_proxy_connection()){
+                        var local_params = {
+                            'name': self.pos.config.name
+                        };
+                        self.proxy_rpc_call(
+                            '/hw_proxy/rksv_kasse_registrieren',
+                            Object.assign(local_params, self.get_rksv_info(), self.get_bmf_credentials()),
+                            self.timeout
+                        ).then(
+                            function done(response) {
+                                if (response.success == false) {
+                                    popup.state.failure = response.message;
+                                    // Request a status update here
+                                    self.pos.rksv.update_bmf_rk_status();
+                                } else {
+                                    popup.state.success = response.message;
+                                    // Request a status update here
+                                    self.pos.rksv.update_bmf_rk_status();
+                                }
+                            },
+                            function failed() {
+                                popup.state.failure = "Fehler bei der Kommunikation mit der PosBox!";
                             }
-                        },
-                        function failed() {
-                            op_popup.failure("Fehler bei der Kommunikation mit der PosBox!");
-                        }
-                    );
-                } else {
-                    op_popup.failure("Fehler bei der Kommunikation mit der PosBox (Proxy nicht initialisiert)!");
+                        );
+                    } else {
+                        popup.state.failure = "Fehler bei der Kommunikation mit der PosBox (Proxy nicht initialisiert)!";
+                    }
                 }
-                op_popup.$('.execute_button').hide();
-                op_popup.$('.close_button').show();
             });
-        },
+        },*/
         bmf_status_rpc_call: function () {
             var self = this;
             return self.proxy_rpc_call(
@@ -1036,27 +1044,31 @@ odoo.define('pos_rksv.rksv', function (require) {
                 return;
             }
             var self = this;
-            var sprovider_status_popup = this.pos.gui.popup_instances.rksv_popup_widget;
-            sprovider_status_popup.show({}, 'Status der Signatureinheit', 'Status abfragen', false);
-            // Do remove old event handlers
-            sprovider_status_popup.$('.execute_button').off();
-            // Install our own event handler
-            sprovider_status_popup.$('.execute_button').click(function() {
-                sprovider_status_popup.loading('Status vom BMF Abfragen');
-                signature.try_refresh_status(self.pos).then(
-                    function done(response) {
-                        if (response.success == false) {
-                            sprovider_status_popup.failure(response.message);
-                        } else {
-                            sprovider_status_popup.success("Status: " + response.status.status);
+            Gui.showPopup('RKSVPopupWidget', {
+                'title': 'Status der Signatureinheit',
+                'body': 'Es wird der aktuelle Status der Signatureinheit über den Webservice der Finanzonline ermittelt.',
+                'exec_button_title': 'Status abfragen',
+                'kundeninfo': '',
+                'execute': function(popup) {
+                    popup.state.loading = 'Status vom BMF Abfragen';
+                    signature.try_refresh_status(self.pos).then(
+                        function done(response) {
+                            if (response.success == false) {
+                                popup.state.failure = response.message;
+                            } else {
+                                popup.state.success = "Status: " + response.status.status;
+                            }
+                        },
+                        function failed(message) {
+                            popup.state.failure = message;
                         }
-                    },
-                    function failed(message) {
-                        sprovider_status_popup.failure(message);
-                    }
-                );
-                sprovider_status_popup.$('.execute_button').hide();
-                sprovider_status_popup.$('.close_button').show();
+                    );
+                    /*
+                    sprovider_status_popup.$('.execute_button').hide();
+                    sprovider_status_popup.$('.close_button').show();
+
+                     */
+                }
             });
         },
         bmf_register_start_receipt_rpc: function(){

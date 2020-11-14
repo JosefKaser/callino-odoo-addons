@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="RKSVSignatureProvider" owl="1">
+        <div class="sprovider">
+            <p><b><t t-esc="props.signature.get('reader')"/></b></p>
+            <p><t t-esc="props.signature.get('subject')"/></p>
+            <p>Seriennummer: <t t-esc="props.signature.get('serial')"/></p>
+            <t t-if="valid_vat">
+                <button class="sprovider-btn" t-att-value="props.signature.get('serial')">Signatur initialisieren</button>
+                <button class="sprovider-status-btn" t-on-click="reload_status">Status aktualisieren</button>
+                <button class="sprovider-bmf-btn" t-att-serial="props.signature.get('serial')">Beim BMF anmelden</button>
+                <button class="sprovider-bmf-ausfall-btn" t-att-serial="props.signature.get('serial')">Ausfall melden</button>
+                <button class="sprovider-bmf-wiederinbetriebnahme-btn" t-att-serial="props.signature.get('serial')">Betrieb melden</button>
+            </t>
+            <t t-if="!valid_vat">
+                <p style="color:red;">UID stimmt nicht mit der UID Ihres Unternehmens überein</p>
+            </t>
+        </div>
+    </t>
+
+</templates>

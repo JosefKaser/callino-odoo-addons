@@ -2,16 +2,39 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
     'use strict';
 
     const { debounce } = owl.utils;
+    const { useState } = owl;
     const PosComponent = require('point_of_sale.PosComponent');
     const Registries = require('point_of_sale.Registries');
     const { useListener } = require('web.custom_hooks');
+    const { Gui } = require('point_of_sale.Gui');
 
     class RKSVStatusScreen extends PosComponent {
         constructor() {
             super(...arguments);
             this.sproviders = null;
             this.stay_open = false;
-            this.active = false;
+            this.active = true;
+            this.state = useState({
+                rksv_posbox_datetime: 'Unbekannt',
+                rksv_bmf_version: 'Unbekannt',
+                rksv_rksv_version: 'Unbekannt',
+                rksv_addon_version: 'Unbekannt',
+                posbox_status: 'connecting',
+                posbox_message: 'Verbindung herstellen...',
+                cashbox_message: 'Status wird ermittelt',
+                cashbox_color: 'red',
+                cashbox_activate_display: 'none',
+                rksv_status_color: 'red',
+                rksv_status_message: 'Status wird abgefragt',
+                button_register_cashbox: false,
+                button_register_startreceipt: false,
+                button_revalidate_startreceipt: false,
+                button_delete_startreceipt: false,
+                button_export_crypt: false,
+                button_start_receipt_set_valid: false,
+                signatures: [],
+                valid_vat: false,
+            });
             if (this.env.pos.config.iface_rksv) {
                 console.log('RKSV: do install proxy status change handler');
                 this.posbox_status_handler();
@@ -54,8 +77,9 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 // Do request new status from BMF on show
                 var signature = self.env.pos.get('signature');
                 // This will signal us the new status as soon as we get it
-                if (signature)
+                if (signature) {
                     signature.try_refresh_status(self.env.pos);
+                }
             }
             // Do render month product status
             self.render_month_product();
@@ -77,7 +101,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             this.env.pos.gui.chrome.widget.order_selector.$('.deleteorder-button').show();
         }
         activate_cashbox() {
-            this.env.pos.rksv.bmf_kasse_registrieren();
+            Gui.showPopup('RKSVBMFRegisterPopup');
         }
         register_cashbox() {
             this.env.pos.rksv.register_cashbox();
@@ -105,9 +129,9 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
         }
         auto_open_close() {
             // Do not open when rksv is not enabled
-            if (!this.env.pos.config.iface_rksv) return;
+            if (!this.env.pos.config.iface_rksv) { return; }
             // Do not open when rksv is not intitialized
-            if (this.env.pos.rksv === undefined) return;
+            if (this.env.pos.rksv === undefined) { return; }
             // Open Status widget on:
             // - Not already active
             // - Not all is ok - or we need a automatic receipt
@@ -143,7 +167,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             }
         }
         close_pos(){
-            this.env.pos.gui.close();
+            this.trigger('close-pos');
         }
         get_rksv_product(ul, tuple, type){
             var self = this;
@@ -213,23 +237,22 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             var self = this;
             // Listen on status update for kasse
             self.env.pos.bind('change:bmf_status_rk', function(pos, status) {
-                self.$('.cashbox-message-box').html(status.message);
                 //check rk  -needs to be registered with bmf
                 if ((!self.env.pos.config.cashregisterid) || (self.env.pos.config.cashregisterid.trim() == "")) {
-                    self.$('.cashbox-status-indicator .indicator').css('background', 'orange');
-                    self.$('.cashbox-status-indicator .indicator-message').html("Keine gültige KassenID ist gesetzt !");
-                    self.$('.cashbox-status-indicator .activate_cashbox').hide();
+                    self.state.cashbox_color = 'orange';
+                    self.state.cashbox_message = "Keine gültige KassenID ist gesetzt !";
+                    self.state.cashbox_activate_display = 'none';
                 } else if (status.success) {
-                    self.$('.cashbox-status-indicator .indicator').css('background', 'green');
-                    self.$('.cashbox-status-indicator .indicator-message').html(status.message);
-                    self.$('.cashbox-status-indicator .activate_cashbox').hide();
+                    self.state.cashbox_color = 'green';
+                    self.state.cashbox_message = status.message;
+                    self.state.cashbox_activate_display = 'none';
                 } else {
-                    self.$('.cashbox-status-indicator .indicator').css('background', 'red');
-                    self.$('.cashbox-status-indicator .indicator-message').html(status.message);
-                    if ((self.env.pos.rksv.bmf_auth_data()==true) && (!(status.connection===false)))
-                        self.$('.cashbox-status-indicator .activate_cashbox').show();
+                    self.state.cashbox_color = 'red';
+                    self.state.cashbox_message = status.message;
+                    if ((self.env.pos.rksv.bmf_auth_data()===true) && (!(status.connection===false)))
+                        self.state.cashbox_activate_display = 'visible';
                     else
-                        self.$('.cashbox-status-indicator .activate_cashbox').hide();
+                        self.state.cashbox_activate_display = 'none';
                 }
                 // Button für Außerbetriebnahme einbauen !
                 self.auto_open_close();
@@ -246,16 +269,16 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             this.env.pos.proxy.on('change:status', this, function (eh, status) {
                 // Do update the datetime and status here
                 if (status.newValue.drivers.rksv && status.newValue.drivers.rksv.posbox_vienna_datetime) {
-                    self.$('#rksv_posbox_datetime').html(status.newValue.drivers.rksv.posbox_vienna_datetime);
+                    self.state.rksv_posbox_datetime = status.newValue.drivers.rksv.posbox_vienna_datetime;
                 }
                 if (status.newValue.drivers.rksv && status.newValue.drivers.rksv.posbox_rksv_lib_version) {
-                    self.$('#rksv_rksv_version').html(status.newValue.drivers.rksv.posbox_rksv_lib_version.version);
+                    self.state.rksv_rksv_version = status.newValue.drivers.rksv.posbox_rksv_lib_version.version;
                 }
                 if (status.newValue.drivers.rksv && status.newValue.drivers.rksv.posbox_rksv_mod_version) {
-                    self.$('#rksv_addon_version').html(status.newValue.drivers.rksv.posbox_rksv_mod_version.version);
+                    self.state.rksv_addon_version = status.newValue.drivers.rksv.posbox_rksv_mod_version.version;
                 }
                 if (status.newValue.drivers.rksv && status.newValue.drivers.rksv.posbox_bmf_mod_version) {
-                    self.$('#rksv_bmf_version').html(status.newValue.drivers.rksv.posbox_bmf_mod_version.version);
+                    self.state.rksv_bmf_version = status.newValue.drivers.rksv.posbox_bmf_mod_version.version;
                 }
                 // Also check current bmf_status_rk
                 if ((status.newValue.status == "connected") && (!this.env.pos.get('bmf_status_rk').success)) {
@@ -264,50 +287,48 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 }
                 //this.env.pos.posbox_status = status.newValue.status;
                 if (status.newValue.status == "connected") {
-                    self.$('.posbox-status-indicator .indicator').css('background', 'green');
-                    self.$('.posbox-status-indicator .indicator-message').html('PosBox verbunden (' + status.newValue.status + ')');
+                    self.state.posbox_status = 'connected';
+                    self.state.posbox_message = 'PosBox verbunden (' + status.newValue.status + ')';
                 } else {
-                    self.$('.posbox-status-indicator .indicator').css('background', 'red');
-                    self.$('.posbox-status-indicator .indicator-message').html('PosBox getrennt (' + status.newValue.status + ')');
+                    self.state.posbox_status = 'failure';
+                    self.state.posbox_message = 'PosBox getrennt (' + status.newValue.status + ')';
                 }
                 // Check if we have to activate ourself
                 if (status.newValue.status === 'connected' && (!(self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
                     var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
                     var rksvmessage = status.newValue.drivers.rksv && status.newValue.drivers.rksv.message ? status.newValue.drivers.rksv.message : false;
                     if (!rksvstatus) {
-                        self.$('.rksv-status-indicator .register_startreceipt').hide();
-                        self.$('.rksv-status-indicator .register_cashbox').hide();
-                        self.$('.rksv-status-indicator .indicator').css('background', 'red');
+                        self.state.rksv_status_color = 'red';
+                        self.state.button_register_startreceipt = false;
+                        self.state.button_register_cashbox = false;
                         rksvmessage = "Status unbekannt";
                     } else if (rksvstatus == 'connected') {
-                        self.$('.rksv-status-indicator .register_startreceipt').hide();
-                        self.$('.rksv-status-indicator .register_cashbox').hide();
                         // Everything is correct
-                        self.$('.rksv-status-indicator .indicator').css('background', 'green');
+                        self.state.rksv_status_color = 'green';
+                        self.state.button_register_startreceipt = false;
+                        self.state.button_register_cashbox = false;
                         rksvmessage = "PosBox Modul verbunden";
                     } else if (rksvstatus == 'invalidstartreceipt') {
-                        self.$('.rksv-status-indicator .register_startreceipt').show();
-                        self.$('.rksv-status-indicator .register_cashbox').hide();
                         // Validation of start receipt failed - activate the try again button
-                        self.$('.rksv-status-indicator .indicator').css('background', 'orange');
+                        self.state.rksv_status_color = 'orange';
+                        self.state.button_register_startreceipt = true;
+                        self.state.button_register_cashbox = false;
                         rksvmessage = "Validierungsfehler!";
                     } else if (rksvstatus == 'failure') {
-                        self.$('.rksv-status-indicator .register_startreceipt').hide();
-                        self.$('.rksv-status-indicator .register_cashbox').hide();
-                        self.$('.rksv-status-indicator .indicator').css('background', 'red');
+                        self.state.rksv_status_color = 'red';
+                        self.state.button_register_startreceipt = false;
+                        self.state.button_register_cashbox = false;
                         rksvmessage = "Fehler";
                     } else if (rksvstatus == 'doesnotexists') {
-                        self.$('.rksv-status-indicator .register_startreceipt').hide();
-                        self.$('.rksv-status-indicator .register_cashbox').show();
                         // Cashbox is not registered on this posbox !
-                        self.$('.rksv-status-indicator .indicator').css('background', 'red');
+                        self.state.rksv_status_color = 'red';
+                        self.state.button_register_startreceipt = false;
+                        self.state.button_register_cashbox = true;
                         rksvmessage = "Kassen ID nicht auf dieser PosBox registriert!";
                     } else {
-                        self.$('.rksv-status-indicator .register_startreceipt').hide();
-                        self.$('.rksv-status-indicator .register_cashbox').hide();
-                        // Only show it if it is not already in state visible !
-                        self.$('.rksv-status-indicator .indicator').css('background', 'red');
-                        self.$('.rksv-status-indicator .register_cashbox').hide();
+                        self.state.rksv_status_color = 'red';
+                        self.state.button_register_startreceipt = false;
+                        self.state.button_register_cashbox = false;
                     }
                     if (!rksvmessage) {
                         rksvmessage = "Status: " + status.newValue.drivers && status.newValue.drivers.rksv && status.newValue.drivers.rksv.status ? status.newValue.drivers.rksv.status : '?';
@@ -322,46 +343,31 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                         container.append(messages);
                         rksvmessage = container.html();
                     }
-                    self.$('.rksv-status-indicator .indicator-message').html(rksvmessage);
+                    self.state.rksv_status_message = rksvmessage;
 
                 } else if (status.newValue.status === 'connected' && (self.env.pos.config.state === "setup")) {
-                    self.$('.rksv-status-indicator .indicator').css('background', 'red');
-                    self.$('.rksv-status-indicator .indicator-message').html("Kasse befindet sich im Status Setup !");
-                    self.$('.rksv-status-indicator .register_cashbox').show();
+                    self.state.rksv_status_color = 'red';
+                    self.state.rksv_status_message = "Kasse befindet sich im Status Setup !";
+                    self.state.button_register_cashbox = true;
                 } else if (status.newValue.status === 'connected' && (self.env.pos.config.state === "failure")) {
-                    self.$('.rksv-status-indicator .indicator').css('background', 'red');
-                    self.$('.rksv-status-indicator .indicator-message').html("Kasse ist markiert als ausgefallen !");
+                    self.state.rksv_status_color = 'red';
+                    self.state.rksv_status_message = "Kasse ist markiert als ausgefallen !";
                 } else if (status.newValue.status === 'connected' && (self.env.pos.config.state === "inactive")) {
-                    self.$('.rksv-status-indicator .indicator').css('background', 'red');
-                    self.$('.rksv-status-indicator .indicator-message').html("Kasse ist deaktviert !");
+                    self.state.rksv_status_color = 'red';
+                    self.state.rksv_status_message = "Kasse ist deaktviert !";
                 }
-                /*
-                It should always be possible to use an other signature provider
-
-                if (self.env.pos.get('cashbox_mode') == 'active'){
-                    self.$el.find('.sprovider-btn').hide()
-                }
-                */
                 if (self.env.pos.get('cashbox_mode') == 'signature_failed'){
-                    self.$el.find('.sprovider-btn').show()
+                    // TODO
+                    //self.$el.find('.sprovider-btn').show()
                 }
                 if (self.env.pos.get('cashbox_mode') == 'posbox_failed'){
-                    
+                    // TODO
                 }
                 self.auto_open_close();
             });
         }
         render_card (card) {
             var valid_vat = false;
-            if (card.matchVAT(this.env.pos.company.bmf_vat_number)) {
-                valid_vat = true;
-            }
-            if (!valid_vat) {
-                // Try to match against Steuernummer
-                if (card.matchTaxNumber(this.env.pos.company.bmf_tax_number)) {
-                    valid_vat = true;
-                }
-            }
             var sprovider_html = QWeb.render('SignatureProvider', {
                 widget: this,
                 card: card,
@@ -385,16 +391,12 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             return signature_html;
         }
         render_sproviders () {
+            /* Render list of available signatures */
+            this.state.signatures = this.env.pos.signatures.models;
+            /*
             var self = this;
             self.$('.provider-container').empty();
             self.$('.provider-container').append(self.render_signature());
-            var signatures = this.env.pos.signatures;
-            if (!signatures) {
-                return;
-            }
-            signatures.forEach(function(card) {
-                self.$('.provider-container').append(self.render_card(card));
-            });
             self.$el.find('.sprovider-btn').click(self, function (event) {
                 var password = self.$el.find('#pass_input_signature').val();
                 if (password == self.env.pos.config.pos_admin_passwd) {
@@ -436,6 +438,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 self.env.pos.rksv.bmf_sprovider_status(event.target.attributes['serial'].value);
             });
             self.try_to_close();
+             */
         }
         
     }

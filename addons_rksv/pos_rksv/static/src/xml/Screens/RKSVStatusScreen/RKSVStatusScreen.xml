@@ -3,7 +3,7 @@
 
     <t t-name="RKSVStatusScreen" owl="1">
         <div class="modal-dialog">
-            <div class="popup popup-rksv">
+            <div class="popup popup-rksv popup-rksv-fullscreen">
                 <div class='pos-help'>
                     <p>
                         Dies ist das primäre Statusfenster. Es erscheint zum Setup oder wenn etwaige Probleme auftauchen.
@@ -18,39 +18,40 @@
                     <table width="100%">
                         <tr>
                             <td width="30%">Uhrzeit auf der PosBox:</td>
-                            <td width="20%" id="rksv_posbox_datetime"></td>
+                            <td width="20%"><t t-esc="state.rksv_posbox_datetime" /></td>
                             <td width="30%">BMF Bibliothek Version:</td>
-                            <td width="20%" id="rksv_bmf_version"></td>
+                            <td width="20%"><t t-esc="state.rksv_bmf_version" /></td>
                         </tr>
                         <tr>
                             <td width="30%">RKSV Bibliothek Version:</td>
-                            <td width="20%" id="rksv_rksv_version"></td>
+                            <td width="20%"><t t-esc="state.rksv_rksv_version" /></td>
                             <td width="30%">RKSV PosBox Version:</td>
-                            <td width="20%" id="rksv_addon_version"></td>
+                            <td width="20%"><t t-esc="state.rksv_addon_version" /></td>
                         </tr>
                     </table>
                 </div>
                 <div class='posbox-status-container'>
                     <div class="posbox-status-indicator clearfix">
-                        <div class="indicator" style="background: red;"/>
+                        <div class="indicator" style="background: red;" t-if="state.posbox_status !== 'connected'" />
+                        <div class="indicator" style="background: green;" t-if="state.posbox_status === 'connected'" />
                         <label>PosBox:</label>
-                        <div class="indicator-message">PosBox getrennt</div>
+                        <div class="indicator-message"><t t-esc="state.posbox_message"/></div>
                     </div>
                     <div class="rksv-status-indicator clearfix">
-                        <div class="indicator" style="background: red;"/>
+                        <div class="indicator" t-attf-style="background:{{ state.rksv_status_color }}"/>
                         <label>RKSV:</label>
-                        <div class="indicator-message">Status wird abgefragt</div>
-                        <button class="register_cashbox" style="display:none;">-> Kasse mit PosBox verknüpfen</button>
-                        <button class="register_startreceipt revalidate_startreceipt" style="display:none;">-> Startbeleg prüfen</button>
-                        <button class="register_startreceipt delete_startreceipt" style="display:none;">-> Startbeleg löschen</button>
-                        <button class="register_startreceipt export_crypt" style="display:none;">-> Crypt Export</button>
-                        <button class="register_startreceipt start_receipt_set_valid" style="display:none;">-> Gültigkeit des Startbelegs erzwingen</button>
+                        <div class="indicator-message"><t t-raw="state.rksv_status_message"/></div>
+                        <button class="register_cashbox" t-if="state.button_register_cashbox" t-on-click="register_cashbox">-> Kasse mit PosBox verknüpfen</button>
+                        <button class="register_startreceipt revalidate_startreceipt" t-if="state.button_register_startreceipt &amp;&amp; state.button_revalidate_startreceipt">-> Startbeleg prüfen</button>
+                        <button class="register_startreceipt delete_startreceipt" t-if="state.button_register_startreceipt &amp;&amp; state.button_delete_startreceipt">-> Startbeleg löschen</button>
+                        <button class="register_startreceipt export_crypt" t-if="state.button_register_startreceipt &amp;&amp; state.button_export_crypt">-> Crypt Export</button>
+                        <button class="register_startreceipt start_receipt_set_valid" t-if="state.button_register_startreceipt &amp;&amp; state.button_start_receipt_set_valid">-> Gültigkeit des Startbelegs erzwingen</button>
                     </div>
                     <div class="cashbox-status-indicator clearfix">
-                        <div class="indicator" style="background: red;"/>
+                        <div class="indicator" t-attf-style="background:{{ state.cashbox_color }}"/>
                         <label>BMF (Kasse):</label>
-                        <div class="indicator-message ">Status wird abgefragt</div>
-                        <button class="activate_cashbox" style="display:none;">-> Kasse beim BMF anmelden</button>
+                        <div class="indicator-message "><t t-esc="state.cashbox_message"/></div>
+                        <button class="activate_cashbox" t-on-click="activate_cashbox" t-attf-style="display:{{ state.cashbox_activate_display }}">-> Kasse beim BMF anmelden</button>
                     </div>
                     <div class="signature-provider-status-indicator clearfix">
                         <div class="indicator" style="background:red;"/>
@@ -72,12 +73,18 @@
                             <input id="pass_input_signature" class="pos_admin_passwd" type="password" />
                         </div>
                         <div class="provider-message-box"></div>
-                        <div class="provider-container" />
+                        <div class="provider-container" t-if="state.signatures">
+                            <t t-foreach="state.signatures" t-as="signature" t-key="signature.id">
+                                <RKSVSignatureProvider
+                                        signature="signature"
+                                        valid_vat="state.valid_vat"
+                                        t-on-click-client="clickClient" />
+                            </t>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </t>
-
 
 </templates>

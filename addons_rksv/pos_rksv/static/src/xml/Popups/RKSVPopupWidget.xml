@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="RKSVPopupWidget" owl="1">
+        <div class="modal-dialog">
+            <div class="popup popup-rksv content">
+                <p class="title"><t t-esc="state.title"/></p>
+                <div class="message" ><t t-esc="state.kundeninfo"/></div>
+                <div class="passwd_input" t-if="!state.authorized">
+                    <label for="pass_input_register">Password (PoS Admin)</label>
+                    <input id="pass_input_register" class="pos_admin_passwd" type="password" t-ref="password"/>
+                </div>
+                <div class="kundeninfo_div" t-if="state.authorized and state.kundeninfo_title">
+                    <h2 class="kundeninfo_title"><t t-esc="state.kundeninfo_title"/></h2>
+                    <textarea class="kundeninfo" cols="40" rows="5" t-ref="kundeninfo"></textarea>
+                </div>
+                <div class="kundeninfo_div" t-if="state.authorized and state.body">
+                    <p><t t-esc="state.body"/></p>
+                </div>
+                <div class="kundeninfo_div" t-if="state.authorized and state.failure">
+                    <p style="color:red;"><t t-esc="state.failure"/></p>
+                </div>
+                <div class="kundeninfo_div" t-if="state.authorized and state.success">
+                    <p style="color:green;"><t t-esc="state.success"/></p>
+                </div>
+                <div class="footer">
+                    <div class="button authorize authorize_button" t-on-click="check_passwd" t-if="!state.authorized">Prüfen</div>
+                    <div class="button execute execute_button" t-if="state.authorized" t-on-click="execute"><t t-esc="state.exec_button_title"/></div>
+                    <div class="button cancel close_button" t-on-click="cancel">Schließen</div>
+                </div>
+            </div>
+            <div class="popup popup-rksv oe_hidden loading" t-if="state.loading"><t t-esc="state.loading"/></div>
+        </div>
+    </t>
+</templates>

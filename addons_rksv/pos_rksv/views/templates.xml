@@ -11,13 +11,15 @@
               <script type="text/javascript" src="/pos_rksv/static/src/js/Chrome.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVPopupWidget.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RegisterCashboxPopupWidget.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVBMFRegisterPopup.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVSProviderAusfallPopupWidget.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVSProviderWiederinbetriebnahmePopupWidget.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Popups/RKSVFAPopupWidget.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/ChromeWidgets/RKSVStatusWidget.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/RKSVPaymentScreen.js"></script>
               <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/ReceiptScreenWidget.js"></script>
-              <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/RKSVStatusScreen.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/RKSVStatusScreen/RKSVStatusScreen.js"></script>
+              <script type="text/javascript" src="/pos_rksv/static/src/js/Screens/RKSVStatusScreen/RKSVSignatureProvider.js"></script>
               <link href="/pos_rksv/static/src/css/rksv.css" rel="stylesheet"/>
           </xpath>
         </template>

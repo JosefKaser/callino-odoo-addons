@@ -1,5 +1,7 @@
 odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
     "use strict";
+
+    const { useState, useRef } = owl.hooks;
     const AbstractAwaitablePopup = require('point_of_sale.AbstractAwaitablePopup');
     const Registries = require('point_of_sale.Registries');
 
@@ -12,22 +14,29 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
     class RKSVPopupWidget extends AbstractAwaitablePopup {
         constructor() {
             super(...arguments);
-            // Display kundeninfo textarea or not
-            //kundeninfo: false
+            this.state = useState({
+                title: arguments[1].title,
+                exec_button_title: arguments[1].exec_button_title,
+                kundeninfo: arguments[1].kundeninfo,
+                authorized: false,
+                loading: false,
+                failure: false,
+                success: false,
+                body: arguments[1].body,
+                execute: arguments[1].execute,
+            });
+            this.passwordRef = useRef('password');
         }
-        // Do install default event handlers
-        installEventHandler() {
-            var self = this;
-            // Install close button event handler
-            this.$('.close_button').off();
-            this.$('.close_button').on('click', function () {
-                self.hide();
-            });
-            // Install event handler for authorize button
-            this.$('.authorize_button').off();
-            this.$('.authorize_button').on('click', function () {
-                self.check_passwd();
-            });
+        mounted() {
+            this.passwordRef.el.focus();
+        }
+        execute() {
+            if (this.state.execute) {
+                this.state.execute(this);
+            }
+        }
+        close() {
+
         }
         show(show_options, title, exec_button_title, kundeninfo) {
             this.kundeninfo = kundeninfo;
@@ -76,9 +85,11 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
         }
         check_passwd() {
             var self = this;
-            var pos_admin_passwd = this.pos.config.pos_admin_passwd;
-            var entered_passwd = this.$('.pos_admin_passwd').val();
+            var pos_admin_passwd = this.env.pos.config.pos_admin_passwd;
+            var entered_passwd = $(this.passwordRef.el).val();
             if (pos_admin_passwd === entered_passwd) {
+                this.state.authorized = true;
+                /*
                 this.$('.message').html("Authorized");
                 this.$('.passwd_input').hide();
                 this.$('.authorize_button').hide();
@@ -99,16 +110,26 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
                 if (this.kundeninfo)
                     this.$('.kundeninfo_div').show();
                 return true;
+                 */
             } else {
+                this.state.authorized = false;
+                /*
                 this.$('.pos_admin_passwd').removeAttr('value');
                 this.$('.message').html("Password incorrect.");
                 this.$('.kundeninfo_div').hide();
                 return false;
+
+                 */
             }
         }
     }
 
-    RKSVPopupWidget.template = 'RKSVOperationPopupWidget';
+    RKSVPopupWidget.template = 'RKSVPopupWidget';
+    RKSVPopupWidget.defaultProps = {
+        title: 'Title',
+        exec_button_title: 'Ausführen',
+        kundeninfo: '',
+    };
 
     Registries.Component.add(RKSVPopupWidget);
 

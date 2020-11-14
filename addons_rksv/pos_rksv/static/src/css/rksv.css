@@ -49,8 +49,9 @@
     font-size: 0.7em;
     color: red;
 }
-.popup-rksv {
+.popup-rksv-fullscreen {
     max-width: 100% !important;
+    position: fixed !important;
 }
 .popup.content label,
 .popup.content input,
@@ -76,9 +77,11 @@
     padding: 5px;
 }
 
+/*
 .pos .popup.popup-rksv.content {
     height: 50%;
 }
+*/
 
 .popup.popup-rksv .clearfix label,
 .popup.popup-rksv label {
