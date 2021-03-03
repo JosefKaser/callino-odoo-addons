@@ -4,17 +4,10 @@
 
     <!-- Extend the OrderReceipt -->
     <t t-extend="OrderReceipt" >
-        <!-- Shop Name -->
-        <t t-jquery="t[t-if='receipt.shop.name']" t-operation="replace">
-            <t t-if='receipt.shop.name &amp;&amp; receipt.config.print_shop_name'>
-                <div><t t-esc='receipt.shop.name' /></div>
-            </t>
-        </t>
-
         <!-- Company Logo -->
         <t t-jquery="t[t-if='receipt.company.logo']" t-operation="replace">
             <t t-if='receipt.company.logo &amp;&amp; receipt.config.print_shop_logo'>
-                <img t-att-src='receipt.company.logo' />
+                <img class="pos-receipt-logo" t-att-src='receipt.company.logo' alt="Logo"/>
                 <br/>
             </t>
         </t>
@@ -36,7 +29,7 @@
         <!-- Shop VAT -->
         <t t-jquery="t[t-if='receipt.company.vat']" t-operation="replace">
             <t t-if='receipt.company.vat &amp;&amp; receipt.config.print_shop_vat'>
-                <div>VAT:<t t-esc='receipt.company.vat' /></div>
+                <div><t t-esc='receipt.company.vat_label'/>:<t t-esc='receipt.company.vat' /></div>
             </t>
         </t>
 

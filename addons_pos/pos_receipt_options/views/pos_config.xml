@@ -10,14 +10,13 @@
                 <sheet position='inside'>
                     <group string="Print Receipt Options" name="print_options">
                         <group>
-                            <field name="print_shop_name"/>
                             <field name="print_shop_logo"/>
+                            <field name="print_shop_vat"/>
+                            <field name="print_shop_email"/>
                             <field name="print_shop_address"/>
                             <field name="print_shop_phone"/>
                         </group>
                         <group>
-                            <field name="print_shop_vat"/>
-                            <field name="print_shop_email"/>
                             <field name="print_shop_website"/>
                             <field name="print_shop_cashier"/>
                             <field name="print_shop_customer"/>

@@ -11,7 +11,6 @@
     'description': """
 POS Receipt Printing
 ====================
-* Option for "Print Stock Name"
 * Option for "Print Logo"
 * Option for "Print Address"
 * Option for "Print Phone"
@@ -19,6 +18,7 @@ POS Receipt Printing
 * Option for "Print EMail"
 * Option for "Print Website"
 * Option for "Print Cashier"
+* Option for "Print Customer"
 
 """,
     'depends': ['point_of_sale'],
