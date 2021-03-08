@@ -133,7 +133,7 @@ odoo.define('pos_pay_invoice.screens', function (require) {
             rpc.query({
                 'model': 'account.move',
                 'method': 'search_read',
-                'domain': ['&', ['state', '=', 'posted'], ['pos_order_id', '=', false], ['type', '=', 'out_invoice'], ['invoice_payment_state', '=', 'not paid']],
+                'domain': _.find(this.pos.models,function(model){ return model.model === 'account.move'; }).domain(),
                 'fields': fields,
             }).then(
                 function(invoices){
@@ -179,8 +179,11 @@ odoo.define('pos_pay_invoice.screens', function (require) {
             // Add product to order
             order.add_product(product, {
                 price: this.new_invoice.get('amount_total'),
+                lst_price: this.new_invoice.get('amount_total'),
                 extras: {
                     invoice: this.new_invoice,
+                    price_manually_set: true,
+                    product_ref_text: this.new_invoice.get('name'),
                 },
                 merge: false,
             });

@@ -42,7 +42,12 @@ odoo.define('pos_pay_invoice.models', function (require) {
         model: 'account.move',
         fields: ['name', 'ref', 'partner_id', 'invoice_date', 'amount_total', 'invoice_date_due', 'id', 'pos_order_id', 'invoice_payment_state'],
         domain: function (self) {
-            return [['state', '=', 'posted'], ['pos_order_id', '=', false], ['type', '=', 'out_invoice'], ['invoice_payment_state', '=', 'not paid']];   // Do load open out invoices
+            return [
+                ['state', '=', 'posted'],
+                ['pos_order_id', '=', false],
+                ['type', '=', 'out_invoice'],
+                ['invoice_payment_state', 'not in', ['paid', 'in_payment']]
+            ];   // Do load open out invoices
         },
         loaded: function (self, invoices) {
             if ((invoices) && (invoices.length > 0)) {

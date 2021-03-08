@@ -53,8 +53,9 @@ odoo.define('pos_rksv.screens', function (require) {
             // Set the push to rksv flag
             order.push_to_rksv = true;
 
-            if (order.is_paid_with_cash() && this.pos.config.iface_cashdrawer) {
-                this.pos.proxy.open_cashbox();
+            if ((order.is_paid_with_cash() || order.get_change()) && this.pos.config.iface_cashdrawer) {
+
+                    this.pos.proxy.printer.open_cashbox();
             }
             order.initialize_validation_date();
             self.pos.rksv.rksv_wait();
