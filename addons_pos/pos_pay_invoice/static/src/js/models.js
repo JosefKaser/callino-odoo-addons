@@ -127,8 +127,8 @@ odoo.define('pos_pay_invoice.models', function (require) {
         },
         init_from_JSON: function(json) {
             OrderlineModelSuper.init_from_JSON.call(this, json);
-            this.invoice_id = json['invoice_id'];
-            if (!this.get_invoice()) {
+            this.invoice_id = json.invoice_id;
+            if ((this.invoice_id) && (!this.get_invoice())) {
                 this.quantity = 0;
             }
         },
