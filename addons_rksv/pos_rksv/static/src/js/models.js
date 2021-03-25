@@ -1,10 +1,9 @@
 /*
- A Base Object for RKSV - does not depend on any other RKSV Object
+ Do inject our own needed models and fields
  */
 odoo.define('pos_rksv.models', function (require) {
     "use strict";
     var models = require('point_of_sale.models');
-    var core = require('web.core');
 
     models.append_domain = function(modelname, domain) {
         var pmodels = models.PosModel.prototype.models;

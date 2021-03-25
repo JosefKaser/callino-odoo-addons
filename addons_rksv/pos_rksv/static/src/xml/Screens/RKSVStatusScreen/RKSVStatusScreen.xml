@@ -53,25 +53,16 @@
                         <div class="indicator-message "><t t-esc="state.cashbox_message"/></div>
                         <button class="activate_cashbox" t-on-click="activate_cashbox" t-attf-style="display:{{ state.cashbox_activate_display }}">-> Kasse beim BMF anmelden</button>
                     </div>
-                    <div class="signature-provider-status-indicator clearfix">
-                        <div class="indicator" style="background:red;"/>
-                        <label>BMF (Signature):</label>
-                        <div class="indicator-message">Status wird abgefragt</div>
-                    </div>
                     <div class="monthproduct-status-indicator clearfix">
-                        <div class="indicator" style="background: red;"/>
+                        <div class="indicator" t-attf-style="background:{{ state.configuration_color }}"/>
                         <label>Konfiguration:</label>
-                        <div class="indicator-message">Status wird abgefragt</div>
+                        <div class="indicator-message">RKSV Produkte</div>
                     </div>
-                    <button class="close_rksv">Close</button>
+                    <button t-on-click="close_rksv">Close</button>
                 </div>
                 <div class='posbox-status-container'>
                     <div class="signature-choose">
                         <p class="signature-provider-help">Bitte wählen Sie einen Signatur Provider aus der Liste. Der Button "Verwenden" setzt den aktiven Signatur Provider.</p>
-                        <div class="signature-pass">
-                            <label for="pass_input_signature">Password (PoS Admin)</label>
-                            <input id="pass_input_signature" class="pos_admin_passwd" type="password" />
-                        </div>
                         <div class="provider-message-box"></div>
                         <div class="provider-container" t-if="state.signatures">
                             <t t-foreach="state.signatures" t-as="signature" t-key="signature.id">

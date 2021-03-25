@@ -35,6 +35,7 @@ odoo.define('pos_rksv.RKSVBMFRegisterPopup', function (require) {
             } else {
                 self.state.failure = "Fehler bei der Kommunikation mit der PosBox (Proxy nicht initialisiert)!";
             }
+            this.state.execute_available = false;
         }
     }
     RKSVBMFRegisterPopup.defaultProps = {

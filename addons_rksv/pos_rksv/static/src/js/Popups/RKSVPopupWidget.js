@@ -18,7 +18,9 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
                 title: arguments[1].title,
                 exec_button_title: arguments[1].exec_button_title,
                 kundeninfo: arguments[1].kundeninfo,
+                kundeninfo_title: arguments[1].kundeninfo_title,
                 authorized: false,
+                execute_available: false,
                 loading: false,
                 failure: false,
                 success: false,
@@ -26,6 +28,7 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
                 execute: arguments[1].execute,
             });
             this.passwordRef = useRef('password');
+            this.kundeninfo = useRef('kundeninfo');
         }
         mounted() {
             this.passwordRef.el.focus();
@@ -35,9 +38,7 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
                 this.state.execute(this);
             }
         }
-        close() {
-
-        }
+        /*
         show(show_options, title, exec_button_title, kundeninfo) {
             this.kundeninfo = kundeninfo;
             this._super(show_options);
@@ -83,43 +84,15 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
             this.loading_done();
             this.$('.message').html('<p style="color: red;">' + message + '</p>');
         }
+         */
         check_passwd() {
-            var self = this;
             var pos_admin_passwd = this.env.pos.config.pos_admin_passwd;
             var entered_passwd = $(this.passwordRef.el).val();
             if (pos_admin_passwd === entered_passwd) {
                 this.state.authorized = true;
-                /*
-                this.$('.message').html("Authorized");
-                this.$('.passwd_input').hide();
-                this.$('.authorize_button').hide();
-                this.$('.kundeninfo').off();
-                if ((!this.options['kundeninfo_required']) || (!this.kundeninfo)) {
-                    this.$('.execute_button').show();
-                } else if (this.options['kundeninfo_required']) {
-                    this.$('.execute_button').show();
-                    this.$('.execute_button').addClass('disabled');
-                    this.$('.kundeninfo').on('input', function () {
-                        if (self.$('.kundeninfo').val() > '') {
-                            self.$('.execute_button').removeClass('disabled');
-                        } else {
-                            self.$('.execute_button').addClass('disabled');
-                        }
-                    });
-                }
-                if (this.kundeninfo)
-                    this.$('.kundeninfo_div').show();
-                return true;
-                 */
+                this.state.execute_available = true;
             } else {
                 this.state.authorized = false;
-                /*
-                this.$('.pos_admin_passwd').removeAttr('value');
-                this.$('.message').html("Password incorrect.");
-                this.$('.kundeninfo_div').hide();
-                return false;
-
-                 */
             }
         }
     }
@@ -134,5 +107,4 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
     Registries.Component.add(RKSVPopupWidget);
 
     return RKSVPopupWidget;
-    //gui.define_popup({name:'rksv_popup_widget', widget: RKSVPopUpWidget});
 });

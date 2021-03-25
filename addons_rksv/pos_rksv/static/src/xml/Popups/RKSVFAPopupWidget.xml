@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="RKSVFAPopupWidget" owl="1">
+        <div class="modal-dialog">
+            <div class="popup popup-rksv content">
+                <p class="title">RKSV FA Anmeldung</p>
+                <p style="color:red;" t-if="state.message"><t t-esc="state.message"/></p>
+                <div class="data">
+                    <ul class="body" style="text-align:left;">
+                        <li class="clearfix">
+                            <label>UID: </label>
+                            <input type="text" readonly="readonly" t-att-value="state.uid"/>
+                        </li>
+                        <li class="clearfix">
+                            <label>KassenID: </label>
+                            <input type="text" readonly="readonly" t-att-value="state.cashregisterid"/>
+                        </li>
+                        <li class="clearfix">
+                            <label>Serial: </label>
+                            <input type="text" readonly="readonly" t-att-value="state.serial"/>
+                        </li>
+                        <li class="clearfix">
+                            <label>AES Key: </label>
+                            <input type="text" readonly="readonly" t-att-value="state.aes_key"/>
+                        </li>
+                    </ul>
+                    <div>
+                        <h2>Startbeleg</h2>
+                        <img t-att-src="state.rksvfa_image" t-if="state.rksvfa_image"/>
+                        <p style="color:red;" t-if="!state.startbeleg">Kein Startbeleg vorhanden</p>
+                    </div>
+                </div>
+                <div class="footer">
+                    <div class="button cancel" t-on-click="cancel">Schließen</div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

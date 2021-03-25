@@ -60,42 +60,6 @@
         </t>
     </t>
 
-    <t t-name="RKSVFAPopupWidget">
-        <div class="modal-dialog">
-            <div class="popup popup-rksv content">
-                <p class="title">RKSV FA Anmeldung</p>
-                <div class="message" />
-                <div class="data">
-                    <ul class="body" style="text-align:left;">
-                        <li class="clearfix">
-                            <label for="rksvfa_atu">UID: </label>
-                            <input id="rksvfa_atu" type="text" readonly="readonly" class="rksvfa_atu" />
-                        </li>
-                        <li class="clearfix">
-                            <label for="rksvfa_cashregisterid">KassenID: </label>
-                            <input id="rksvfa_cashregisterid" type="text" readonly="readonly" class="rksvfa_cashregisterid" />
-                        </li>
-                        <li class="clearfix">
-                            <label for="rksvfa_serial">Serial: </label>
-                            <input id="rksvfa_serial" type="text" readonly="readonly" class="rksvfa_serial" />
-                        </li>
-                        <li class="clearfix">
-                            <label for="rksvfa_aes_key">AES Key: </label>
-                            <input id="rksvfa_aes_key" type="text" readonly="readonly" class="rksvfa_aes_key" />
-                        </li>
-                    </ul>
-                    <div>
-                        <h2 id="rksvfa_startbeleg">Startbeleg</h2>
-                        <img class="rksvfa_image" />
-                    </div>
-                </div>
-                <div class="footer">
-                    <div class="button cancel close_button">Ok</div>
-                </div>
-            </div>
-            <div class="popup popup-rksv oe_hidden loading">Bitte warten...</div>
-        </div>
-    </t>
 
 
     <t t-name="RKSVSProviderRegistrationPopupWidget">

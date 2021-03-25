@@ -19,7 +19,7 @@ odoo.define('pos_rksv.pos', function (require) {
      */
     var PosModelSuper = models.PosModel;
     models.PosModel = models.PosModel.extend({
-        initialize: function (session, attributes) {
+        initialize: function (attributes) {
             // Init empty signatures collection
             this.signatures = new models.Signatures(null, {
                 pos: this
@@ -37,7 +37,7 @@ odoo.define('pos_rksv.pos', function (require) {
                 'cashbox_mode': 'active'
             });
             // Supercall
-            PosModelSuper.prototype.initialize.call(this, session, attributes);
+            PosModelSuper.prototype.initialize.call(this, attributes);
             var self = this;
             // Do initialize the main RKSV Handler Object !
             this.rksv = new rksv.RKSV({'pos': this, proxy: this.proxy});
@@ -111,76 +111,68 @@ odoo.define('pos_rksv.pos', function (require) {
                     self.set('cashbox_mode', self.config.state);
             });
         },
-        push_order: function (order, type) {
-            var self = this;
+        push_single_order: function (order, opts) {
+            opts = opts || {};
+            const self = this;
             // Handle the dummy case - this can happen
             // Handle no rksv case
-            if ((!order) || (!self.config.iface_rksv))
-                return PosModelSuper.prototype.push_order.call(this, order);
-            // This is my all - and really all deferred object
-            var alldeferred = new $.Deferred(); // holds the global mutex
-            var deferred = this.proxy.message('rksv_order', order.export_for_printing());
-            deferred.then(
-                function done(result) {
-                    if (!result['success']) {
+            if ((!order) || (!self.config.iface_rksv)) {
+                return PosModelSuper.prototype.push_single_order.call(this, order, opts);
+            }
+            // We do return a new Promise - as they original function does
+            return new Promise(function (resolve, reject) {
+                self.proxy.message('rksv_order', order.export_for_printing()).then(
+                    function done(result) {
+                        if (!result['success']) {
+                            order.set_sign_failed();
+                            reject(result['message']);
+                        } else {
+                            // Set result
+                            order.set_sign_result(result);
+                            // make super call which will create the order within odoo
+                            PosModelSuper.prototype.push_single_order.call(self, order, opts).then(resolve, reject);
+                        }
+                    },
+                    function failed() {
                         order.set_sign_failed();
-                        alldeferred.reject(result['message']);
-                    } else {
-                        // Set result
-                        order.set_sign_result(result);
-                        // make super call which will create the order within odoo
-                        PosModelSuper.prototype.push_order.call(self, order);
-                        alldeferred.resolve();
+                        reject(_t("Es ist ein Fehler beim Erstellen der Signatur aufgetreten."));
                     }
-                },
-                function failed() {
-                    order.set_sign_failed();
-                    alldeferred.reject(_t("Es ist ein Fehler beim Erstellen der Signatur aufgetreten."));
-                }
-            );
-            // Send back the alldeferred mutex
-            return alldeferred;
+                );
+            });
         },
         push_and_invoice_order: function (order) {
             var self = this;
             // Handle the dummy case - this can happen
             // Handle no rksv case
-            if ((!order) || (!self.config.iface_rksv))
-                return PosModelSuper.prototype.push_order.call(this, order);
+            if ((!order) || (!self.config.iface_rksv)) {
+                return PosModelSuper.prototype.push_and_invoice_order.call(this, order);
+            }
+            // No client selected - call original funciton
             if(!order.get_client()){
                 return PosModelSuper.prototype.push_and_invoice_order.call(self, order);
             }
-            // This is my all - and really all deferred object
-            var alldeferred = new $.Deferred(); // holds the global mutex
-            // This is my signature deferred object
-            var deferred = this.proxy.message('rksv_order', order.export_for_printing());
-            // Handle signature deferred
-            deferred.then(
-                function done(result) {
-                    // Set order to finalized - so it can't get changed anymore !
-                    order.set_sign_result(result);
-                    order.finalized = true;
-                    var invoiced = PosModelSuper.prototype.push_and_invoice_order.call(self, order);
-                    invoiced.then(
-                        function done() {
-                            alldeferred.resolve();
-                        },
-                        function failed(error) {
-                            // We do pass the error up to the next level
-                            alldeferred.reject(error);
+
+
+            // We do return a new Promise - as they original function does
+            return new Promise(function (resolve, reject) {
+                self.proxy.message('rksv_order', order.export_for_printing()).then(
+                    function done(result) {
+                        if (!result['success']) {
+                            order.set_sign_failed();
+                            reject(result['message']);
+                        } else {
+                            // Set result
+                            order.set_sign_result(result);
+                            // make super call which will create the order within odoo
+                            PosModelSuper.prototype.push_and_invoice_order.call(self, order).then(resolve, reject);
                         }
-                    );
-                },
-                function failed() {
-                    console.log('failed to sign receipt !!!');
-                    order.set_sign_failed();
-                    alldeferred.reject({
-                        'message': 'Signatur fehlgeschlagen'
-                    });
-                }
-            );
-            // Do return the all deferred
-            return alldeferred;
+                    },
+                    function failed() {
+                        order.set_sign_failed();
+                        reject(_t("Es ist ein Fehler beim Erstellen der Signatur aufgetreten."));
+                    }
+                );
+            });
         }
     });
 

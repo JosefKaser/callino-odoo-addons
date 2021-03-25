@@ -13,10 +13,6 @@ odoo.define('pos_rksv.RegisterCashboxPopupWidget', function (require) {
         mounted() {
             this.passwordRef.el.focus();
         }
-        loading(message) {
-            this._super(message);
-            this.$('.startreceipt_div').hide();
-        }
         execute() {
             var self = this;
             this.state.loading = 'Mit PosBox verknüpfen';
@@ -53,18 +49,17 @@ odoo.define('pos_rksv.RegisterCashboxPopupWidget', function (require) {
                     self.state.failure = "Fehler bei der Kommunikation mit der PosBox!";
                 }
             );
+            this.state.execute_available = false;
 
         }
     }
     RegisterCashboxPopupWidget.template = 'RegisterCashboxPopupWidget';
     RegisterCashboxPopupWidget.defaultProps = {
-        title: 'Title',
-        exec_button_title: 'Ausführen',
+        title: 'Kasse mit PosBox verknüpfen',
+        exec_button_title: 'Verknüpfen',
         kundeninfo: '',
     };
     Registries.Component.add(RegisterCashboxPopupWidget);
 
     return RegisterCashboxPopupWidget;
-
-    //gui.define_popup({name:'rksv_register_cashbox_widget', widget: RegisterCashboxPopupWidget});
 });

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="RKSVFailureWidget" owl="1">
+        <div class="modal-dialog">
+            <div class="popup popup-rksv content">
+                <p class="title"><t t-esc="state.title"/></p>
+                <div class="message" ><t t-esc="state.body"/></div>
+                <div class="footer">
+                    <div class="button cancel" t-on-click="cancel">Schließen</div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

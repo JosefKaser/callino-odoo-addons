@@ -25,7 +25,9 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
             this.env.pos.proxy.off('change:status', this, this._onChangeStatus);
         }
         async onClick() {
-            this.showScreen('RKSVStatusScreen');
+            this.showScreen('RKSVStatusScreen', {
+                    stay_open: true
+            });
         }
         _onChangeStatus(posProxy, statusChange) {
             this._set_smart_status(statusChange.newValue);
@@ -37,16 +39,16 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
         _set_smart_status(status) {
             var self = this;
             var mode = self.env.pos.get('cashbox_mode');
-            if (mode == 'signature_failed') {
+            if (mode === 'signature_failed') {
                 this.set_status('failure', 'Ausfall SE');
-            } else if (mode == 'posbox_failed') {
+            } else if (mode === 'posbox_failed') {
                 this.set_status('failure', 'Ausfall PosBox');
             } else {
                 if (status.status === 'connected' && (!(self.env.pos.config.state === "setup" || self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
                     var rksvstatus = status.drivers.rksv ? status.drivers.rksv.status : false;
                     if (!rksvstatus) {
                         this.set_status('disconnected', '');
-                    } else if (rksvstatus == 'connected') {
+                    } else if (rksvstatus === 'connected') {
                         this.set_status('connected', '');
                     } else {
                         this.set_status(rksvstatus, '');

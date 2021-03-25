@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="DebugWidget" t-inherit="point_of_sale.DebugWidget" t-inherit-mode="extension" owl="1">
+        <xpath expr="//p[hasclass('category')]" position="before">
+            <p class="category">RKSV Funktionen</p>
+            <ul>
+                <li class="button" t-on-click="rksv_firstreport">Daten für FA</li>
+                <li class="button" t-on-click="rksv_status">RKSV Status</li>
+                <li class="button" t-on-click="bmf_status_rk">BMF RK Status</li>
+                <li class="button" t-on-click="bmf_register_start_receipt">BMF Startbeleg übermitteln</li>
+                <!--li class="button rksv_reset_dep">DEP Zurücksetzen</li-->
+                <li class="button" t-on-click="rksv_write_dep_crypt_container">DEP/Crypt Export</li>
+                <li class="button" t-on-click="rksv_reprint_special_receipt('start', 'Startbeleg')">Startbeleg nochmals drucken</li>
+                <li class="button" t-on-click="rksv_reprint_special_receipt('year', 'Jahresbeleg')">Jahresbeleg nochmals drucken</li>
+                <li class="button" t-on-click="rksv_reprint_special_receipt('month', 'Monatsbeleg')">Monatsbeleg nochmals drucken</li>
+                <li class="button" t-on-click="rksv_create_null_receipt">Nullbeleg erzeugen</li>
+            </ul>
+        </xpath>
+    </t>
+</templates>

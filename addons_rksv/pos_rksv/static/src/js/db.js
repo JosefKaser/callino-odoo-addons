@@ -3,6 +3,7 @@ odoo.define('pos_rksv.db', function (require) {
 
     var PosDB = require("point_of_sale.DB");
 
+    // This is still ok for odoo pos v14
     PosDB.include({
         invisible_filtered: function(products) {
             if (products instanceof Array) {

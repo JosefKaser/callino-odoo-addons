@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Registrierkasse Österreich - Rechnung über PoS zahlen',
-    'version': '13.0.0.1',
+    'version': '14.0.0.1',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Registrierkassenpflicht Modul für Österreich',

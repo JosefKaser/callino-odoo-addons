@@ -8,31 +8,30 @@
             </span>
 
             <span t-if="state.status === 'connected'" class="js_connected oe_icon oe_green">
-                <i class="fa fa-fw fa-sitemap" role="img" aria-label="Proxy Connected"
-                   title="Proxy Connected"></i>
+                <i class="fa fa-fw fa-certificate" role="img" aria-label="Proxy Connected" title="Proxy Connected"></i>
             </span>
 
-            <span t-if="state.status === 'connecting'" class="js_connecting oe_icon oe_hidden">
+            <span t-if="state.status === 'connecting'" class="js_connecting oe_icon">
                 <i class='fa fa-fw fa-spin fa-spinner'></i>
             </span>
 
-            <span t-if="state.status === 'warning'" class="js_warning oe_icon oe_orange oe_hidden">
+            <span t-if="state.status === 'warning'" class="js_warning oe_icon oe_orange">
                 <i class='fa fa-fw fa-certificate'></i>
             </span>
 
-            <span t-if="state.status === 'disconnected'" class="js_disconnected oe_icon oe_red oe_hidden">
+            <span t-if="state.status === 'disconnected'" class="js_disconnected oe_icon oe_red">
                 <i class='fa fa-fw fa-certificate'></i>
             </span>
 
-            <span t-if="state.status === 'setup'" class="js_setup oe_icon oe_red oe_hidden">
+            <span t-if="state.status === 'setup'" class="js_setup oe_icon oe_red">
                 <i class='fa fa-fw fa-cogs'></i>
             </span>
 
-            <span t-if="state.status === 'failure'" class="js_failure oe_icon oe_red oe_hidden">
-                <i class='fa fa-fw fa-exclamation-circle'></i>
+            <span t-if="state.status === 'failure'" class="js_failure oe_icon oe_red">
+                <i class="fa fa-fw fa-exclamation-circle" role="img" aria-label="RKSV Fehler" title="RKSV Fehler"></i>
             </span>
 
-            <span t-if="state.status === 'inactive'" class="js_inactive oe_icon oe_red oe_hidden">
+            <span t-if="state.status === 'inactive'" class="js_inactive oe_icon oe_red">
                 <i class='fa fa-fw fa-ban'></i>
             </span>
 

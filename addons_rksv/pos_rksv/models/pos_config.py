@@ -119,14 +119,14 @@ class POSConfig(models.Model):
             if not config.cashregisterid or config.cashregisterid == '':
                 config.cashregisterid = uuid.uuid1()
 
-    @api.model
-    def sync_jws(self, jws_sync, config_id):
+    def sync_jws(self, jws_sync):
+        self.ensure_one()
         success = True
         message = 'All receipts in the Posbox are properly synchronized with your Odoo instance!'
-        for signatureSerial, jws_dict in jws_sync.iteritems():
-            for receipt_id, jws_value in jws_dict.iteritems():
+        for signatureSerial, jws_dict in jws_sync.items():
+            for receipt_id, jws_value in jws_dict.items():
                 order = self.env['pos.order'].search([
-                    ('config_id', '=', config_id),
+                    ('config_id', '=', self.id),
                     ('signatureSerial', '=', signatureSerial),
                     ('receipt_id', '=', receipt_id)
                 ])

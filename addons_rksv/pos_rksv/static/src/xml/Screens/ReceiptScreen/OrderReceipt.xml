@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('before-footer')]" position="after">
+            <p t-if="env.pos.config.rksv_at and !env.pos.config.iface_rksv">NICHT GESETZTESKONFORMER BELEG!</p>
+
+            <t t-if="env.pos.config.rksv_at and env.pos.config.iface_rksv">
+                <div t-if="receipt.cashbox_mode=='active'" style="text-align:center;margin: 20px 0;">
+                    <img t-att-src="receipt.qrcode_img" width="50%"/>
+                </div>
+                <div t-if="receipt.cashbox_mode=='signature_failed'" style="text-align:center;margin: 20px 0;">Signatureinheit ausgefallen</div>
+            </t>
+        </xpath>
+        <xpath expr="//div[hasclass('pos-receipt-order-data')]" position="inside">
+            <t t-if="env.pos.config.rksv_at and env.pos.config.iface_rksv">
+                <div>Bon Nr.: <t t-esc="receipt.formatted_receipt_id" /></div>
+                <div>Kassen Nr.: <t t-esc="env.pos.config.cashregisterid" /></div>
+            </t>
+        </xpath>
+    </t>
+</templates>

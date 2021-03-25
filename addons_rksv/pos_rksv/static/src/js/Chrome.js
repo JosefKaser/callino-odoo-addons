@@ -3,9 +3,14 @@ odoo.define('pos_restaurant.chrome', function (require) {
 
     const Chrome = require('point_of_sale.Chrome');
     const Registries = require('point_of_sale.Registries');
+    const { useListener } = require('web.custom_hooks');
 
     const RKSVChrome = (Chrome) =>
         class extends Chrome {
+            constructor() {
+                super(...arguments);
+                useListener('show-start-screen', this._showStartScreen);
+            }
             /**
              * @override
              * Do not set `RKSVStatusScreen` to the order.

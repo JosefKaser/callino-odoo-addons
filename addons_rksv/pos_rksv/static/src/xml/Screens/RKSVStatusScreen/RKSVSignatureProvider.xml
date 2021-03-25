@@ -6,10 +6,15 @@
             <p><b><t t-esc="props.signature.get('reader')"/></b></p>
             <p><t t-esc="props.signature.get('subject')"/></p>
             <p>Seriennummer: <t t-esc="props.signature.get('serial')"/></p>
+            <div class="signature-provider-status-indicator clearfix">
+                <div class="indicator" t-att-style="'background:'+state.color"/>
+                <label>BMF (Signature):</label>
+                <div class="indicator-message"><t t-esc="state.message"/></div>
+            </div>
             <t t-if="valid_vat">
-                <button class="sprovider-btn" t-att-value="props.signature.get('serial')">Signatur initialisieren</button>
-                <button class="sprovider-status-btn" t-on-click="reload_status">Status aktualisieren</button>
-                <button class="sprovider-bmf-btn" t-att-serial="props.signature.get('serial')">Beim BMF anmelden</button>
+                <button t-on-click="use_signature" t-att-value="props.signature.get('serial')">Signatur verwenden</button>
+                <button t-on-click="reload_status">Status aktualisieren</button>
+                <button t-on-click="bmf_register_signature">Beim BMF anmelden</button>
                 <button class="sprovider-bmf-ausfall-btn" t-att-serial="props.signature.get('serial')">Ausfall melden</button>
                 <button class="sprovider-bmf-wiederinbetriebnahme-btn" t-att-serial="props.signature.get('serial')">Betrieb melden</button>
             </t>
