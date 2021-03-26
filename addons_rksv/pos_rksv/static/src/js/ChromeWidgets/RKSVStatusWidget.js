@@ -39,29 +39,30 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
         _set_smart_status(status) {
             var self = this;
             var mode = self.env.pos.get('cashbox_mode');
-            if (mode === 'signature_failed') {
-                this.set_status('failure', 'Ausfall SE');
-            } else if (mode === 'posbox_failed') {
-                this.set_status('failure', 'Ausfall PosBox');
-            } else {
-                if (status.status === 'connected' && (!(self.env.pos.config.state === "setup" || self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
-                    var rksvstatus = status.drivers.rksv ? status.drivers.rksv.status : false;
-                    if (!rksvstatus) {
-                        this.set_status('disconnected', '');
-                    } else if (rksvstatus === 'connected') {
-                        this.set_status('connected', '');
-                    } else {
-                        this.set_status(rksvstatus, '');
+            if (status.status === 'connected' && (!(self.env.pos.config.state === "setup" || self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
+                var rksvstatus = status.drivers.rksv ? status.drivers.rksv.status : false;
+                var cashbox_mode = status.drivers.rksv.cashbox_mode;
+                if (cashbox_mode !== 'active') {
+                    if (cashbox_mode === 'signature_failed') {
+                        this.set_status('failure', 'Ausfall SE');
+                    } else if (mode === 'posbox_failed') {
+                        this.set_status('failure', 'Ausfall PosBox');
                     }
-                } else if (status.status === 'connected' && (self.env.pos.config.state === "setup")) {
-                    this.set_status('setup', 'Setup');
-                } else if (status.status === 'connected' && (self.env.pos.config.state === "failure")) {
-                    this.set_status('failure', 'Ausfall');
-                } else if (status.status === 'connected' && (self.env.pos.config.state === "inactive")) {
-                    this.set_status('inactive', 'Deaktiviert');
+                } else if (!rksvstatus) {
+                    this.set_status('disconnected', '');
+                } else if (rksvstatus === 'connected') {
+                    this.set_status('connected', '');
                 } else {
-                    this.set_status(status.status, '');
+                    this.set_status(rksvstatus, '');
                 }
+            } else if (status.status === 'connected' && (self.env.pos.config.state === "setup")) {
+                this.set_status('setup', 'Setup');
+            } else if (status.status === 'connected' && (self.env.pos.config.state === "failure")) {
+                this.set_status('failure', 'Ausfall');
+            } else if (status.status === 'connected' && (self.env.pos.config.state === "inactive")) {
+                this.set_status('inactive', 'Deaktiviert');
+            } else {
+                this.set_status(status.status, '');
             }
         }
     }

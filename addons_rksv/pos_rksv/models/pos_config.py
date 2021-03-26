@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 # We have to monkey patch this here to allow the write for bmf_gemeldet and state
 def pos_config_write(self, vals):
-    if 'bmf_gemeldet' in vals or 'state' in vals or 'signature_provider_id' in vals:
+    if 'bmf_gemeldet' in vals or 'state' in vals or 'signature_provider_id' in vals or 'cashbox_mode' in vals or len(vals) == 0:
         return super(PosConfig, self).write(vals)
     opened_session = self.mapped('session_ids').filtered(lambda s: s.state != 'closed')
     if opened_session:

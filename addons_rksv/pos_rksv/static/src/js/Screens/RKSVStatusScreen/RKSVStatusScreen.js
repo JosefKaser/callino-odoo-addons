@@ -23,6 +23,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 posbox_status: 'connecting',
                 posbox_message: 'Verbindung herstellen...',
                 cashbox_message: 'Status wird ermittelt',
+                cashbox_mode: 'active',
                 cashbox_color: 'red',
                 configuration_color: (this.env.pos.rksv.statuses['rksv_products_exists']?'green':'red'),
                 cashbox_activate_display: 'none',
@@ -164,8 +165,42 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             this.try_to_close();
         }
         emergency_mode() {
-            var mode = this.env.pos.get('cashbox_mode');
-            return (mode==='signature_failed' || mode==='posbox_failed');
+            return (this.state.cashbox_mode==='signature_failed' || this.state.cashbox_mode==='posbox_failed');
+        }
+        async activate_signature_failed() {
+            var self = this;
+            Gui.showPopup('RKSVPopupWidget', {
+                'title': "Ausfallmodus",
+                'body':  "Ausfallmodus Signatureinheit aktivieren",
+                'exec_button_title': 'Ausfallsmodus aktivieren',
+                'execute': function(popup) {
+                    if (!self.env.pos.rksv.check_proxy_connection()) {
+                        popup.state.failure = 'Kommunikation mit der PosBox ist nicht möglich !';
+                        return;
+                    }
+                    popup.state.body = 'Signatureinheit Ausfall aktivieren...';
+                    var local_params = {
+                        'kundeninfo': $(popup.kundeninfo.el).val(),
+                        'serial': self.state.serial,
+                    };
+                    self.env.pos.rksv.proxy_rpc_call(
+                        '/hw_proxy/cashbox_se_failed',
+                        Object.assign(local_params, self.env.pos.rksv.get_rksv_info(), self.env.pos.rksv.get_bmf_credentials()),
+                        self.timeout
+                    ).then(
+                        function done(response) {
+                            if (response.success === false) {
+                                popup.state.failure = response.message;
+                            } else {
+                                popup.state.success = response.message;
+                            }
+                        },
+                        function failed() {
+                            popup.state.failure = "Fehler bei der Kommunikation mit der PosBox!";
+                        }
+                    );
+                },
+            });
         }
         auto_open_close() {
             // Do not open when rksv is not enabled
@@ -284,6 +319,8 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 // Check if we have to activate ourself
                 if (status.newValue.status === 'connected' && (!(self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
                     var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
+                    self.state.cashbox_mode = status.newValue.drivers.rksv.cashbox_mode;
+                    self.env.pos.set('cashbox_mode', rksvstatus.cashbox_mode);
                     var rksvmessage = status.newValue.drivers.rksv && status.newValue.drivers.rksv.message ? status.newValue.drivers.rksv.message : false;
                     if (!rksvstatus) {
                         self.state.rksv_status_color = 'red';
@@ -328,6 +365,8 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                         status.newValue.drivers.rksv.messages.forEach(function(message) {
                             messages.append('<li>' + message + '</li>');
                         });
+                        // Check for cashbox mode - append state here
+                        messages.append('<li>Aktueller Kassenmodus: ' + status.newValue.drivers.rksv.cashbox_mode + '</li>');
                         container.append(messages);
                         rksvmessage = container.html();
                     }

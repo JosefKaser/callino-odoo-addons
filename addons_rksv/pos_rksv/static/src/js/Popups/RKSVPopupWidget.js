@@ -35,6 +35,7 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
         }
         execute() {
             if (this.state.execute) {
+                this.state.execute_available = false;
                 this.state.execute(this);
             }
         }

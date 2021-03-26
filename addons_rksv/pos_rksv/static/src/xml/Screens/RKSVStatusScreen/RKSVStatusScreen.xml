@@ -42,6 +42,7 @@
                         <label>RKSV:</label>
                         <div class="indicator-message"><t t-raw="state.rksv_status_message"/></div>
                         <button class="register_cashbox" t-if="state.button_register_cashbox" t-on-click="register_cashbox">-> Kasse mit PosBox verknüpfen</button>
+                        <button t-if="state.cashbox_mode=='active'" t-on-click="activate_signature_failed">-> Signatur Ausfall Modus aktivieren(<t t-raw="state.cashbox_mode"/>)</button>
                         <button class="register_startreceipt revalidate_startreceipt" t-if="state.button_register_startreceipt &amp;&amp; state.button_revalidate_startreceipt">-> Startbeleg prüfen</button>
                         <button class="register_startreceipt delete_startreceipt" t-if="state.button_register_startreceipt &amp;&amp; state.button_delete_startreceipt">-> Startbeleg löschen</button>
                         <button class="register_startreceipt export_crypt" t-if="state.button_register_startreceipt &amp;&amp; state.button_export_crypt">-> Crypt Export</button>

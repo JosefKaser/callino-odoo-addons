@@ -453,41 +453,6 @@ odoo.define('pos_rksv.rksv', function (require) {
                 op_popup.$('.close_button').show();
             });
         },
-        rk_ausfalls_modus: function() {
-            var self = this;
-            var op_popup = this.pos.gui.popup_instances.rksv_popup_widget;
-            op_popup.show({}, 'Ausfallmodus der Signatureinheit aktivieren', 'Ausfallmodus');
-            // First - do disable old event handlers
-            op_popup.$('.execute_button').off();
-            // Then install new click handler
-            op_popup.$('.execute_button').click(function() {
-                op_popup.loading('Ausfallmodus aktivieren');
-                if (self.check_proxy_connection()){
-                    self.proxy_rpc_call(
-                        '/hw_proxy/cashbox_se_failed',
-                        Object.assign(self.get_rksv_info()),
-                        self.timeout
-                    ).then(
-                        function done(response) {
-                            if (response.success == false) {
-                                op_popup.failure(response.message);
-                            } else {
-                                op_popup.success(response.message);
-                                // Do set the wcashbox_mode to signature_failed
-                                self.pos.set('cashbox_mode', 'signature_failed');
-                            }
-                        },
-                        function failed() {
-                            op_popup.failure("Fehler bei der Kommunikation mit der PosBox!");
-                        }
-                    );
-                } else {
-                    op_popup.failure("Fehler bei der Kommunikation mit der PosBox (Proxy nicht initialisiert)!");
-                }
-                op_popup.$('.execute_button').hide();
-                op_popup.$('.close_button').show();
-            });
-        },
         bmf_status_rpc_call: function () {
             var self = this;
             return self.proxy_rpc_call(
