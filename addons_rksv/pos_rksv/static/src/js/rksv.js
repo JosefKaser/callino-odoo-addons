@@ -61,7 +61,6 @@ odoo.define('pos_rksv.rksv', function (require) {
                     self.statuses.kasse = false;
                 }
             });
-
             if (this.proxy){
                 this.proxy.on('change:status', this, function (eh, status) {
                     // Ignore the status change when rksv is not enabled

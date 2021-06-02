@@ -107,8 +107,11 @@ odoo.define('pos_rksv.pos', function (require) {
             this.ready.then(function () {
                 console.log('All data is loaded - so do my work...');
                 // Check state from config - set it as my own state
-                if (self.config.iface_rksv)
+                if (self.config.iface_rksv) {
                     self.set('cashbox_mode', self.config.state);
+                    // Request a new status from bmf for the system
+                    self.rksv.update_bmf_rk_status();
+                }
             });
         },
         push_single_order: function (order, opts) {
