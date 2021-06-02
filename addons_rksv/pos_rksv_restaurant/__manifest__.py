@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Registrierkasse Österreich Restaurant',
-    'version': '10.0.0.1',
+    'version': '14.0.0.1',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Registrierkassenpflicht Modul für Österreich, Restaurant Erweiterung',
@@ -23,7 +23,7 @@ Erweiterung zum Basis RKSV Modul für die Restaurant Erweiterung
     ],
     'qweb': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': True,
     "external_dependencies": {
         "python": [],

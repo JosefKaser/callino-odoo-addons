@@ -1,4 +1,4 @@
-odoo.define('pos_restaurant.chrome', function (require) {
+odoo.define('pos_rksv.chrome', function (require) {
     'use strict';
 
     const Chrome = require('point_of_sale.Chrome');
@@ -10,6 +10,11 @@ odoo.define('pos_restaurant.chrome', function (require) {
             constructor() {
                 super(...arguments);
                 useListener('show-start-screen', this._showStartScreen);
+                useListener('show-normal-start-screen', this._showNormalStartScreen);
+            }
+            _showNormalStartScreen() {
+                const { name, props } = super.startScreen;
+                this.showScreen(name, props);
             }
             /**
              * @override

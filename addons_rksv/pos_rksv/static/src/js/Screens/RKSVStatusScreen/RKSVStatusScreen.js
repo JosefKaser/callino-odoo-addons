@@ -231,13 +231,13 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 if (order) {
                     var previous = order.get_screen_data('previous-screen');
                     if ((!previous) || (previous === 'rksv_status')) {
-                        this.trigger('show-start-screen');
+                        this.trigger('show-normal-start-screen');
                     } else {
                         this.showScreen(previous.name);
                     }
                 } else {
                     // if no selected order does exist - then there is no previous-screen - so activate startup screen
-                    this.trigger('show-start-screen');
+                    this.trigger('show-normal-start-screen');
                 }
             }
         }
@@ -320,7 +320,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 if (status.newValue.status === 'connected' && (!(self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
                     var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
                     self.state.cashbox_mode = status.newValue.drivers.rksv.cashbox_mode;
-                    self.env.pos.set('cashbox_mode', rksvstatus.cashbox_mode);
+                    self.env.pos.set('cashbox_mode', status.newValue.drivers.rksv.cashbox_mode);
                     var rksvmessage = status.newValue.drivers.rksv && status.newValue.drivers.rksv.message ? status.newValue.drivers.rksv.message : false;
                     if (!rksvstatus) {
                         self.state.rksv_status_color = 'red';

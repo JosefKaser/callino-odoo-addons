@@ -2,7 +2,7 @@
 <odoo>
     <data>
 
-        <template id="rksv_assets" inherit_id="point_of_sale.assets_backend">
+        <template id="rksv_assets" inherit_id="point_of_sale.assets">
           <xpath expr="." position="inside">
               <script type="text/javascript" src="/pos_invisible_products/static/src/js/pos_invisible_products.js"></script>
           </xpath>
