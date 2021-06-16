@@ -11,7 +11,7 @@ class AccountMove(models.Model):
 
     pos_order_ids = fields.One2many(
         comodel_name='pos.order',
-        inverse_name='invoice_id',
+        inverse_name='account_move',
         string="Related PoS Orders",
         readonly=True,
     )

@@ -37,22 +37,17 @@ odoo.define('pos_pay_invoice.models', function (require) {
         model: models.Invoice,
     });
 
-    // Load Odoo configured signature providers - check if this is still needed !
+    // Load invoices
     models.load_models({
         model: 'account.move',
-        fields: ['name', 'ref', 'partner_id', 'invoice_date', 'amount_total', 'invoice_date_due', 'id', 'pos_order_id', 'invoice_payment_state'],
+        label: 'load_invoices',
+        fields: ['name', 'ref', 'partner_id', 'invoice_date', 'amount_total', 'invoice_date_due', 'id', 'pos_order_id', 'payment_state', 'amount_residual'],
         domain: function (self) {
-            return [['state', '=', 'posted'], ['pos_order_id', '=', false], ['type', '=', 'out_invoice'], ['invoice_payment_state', '=', 'not paid']];   // Do load open out invoices
+            return [['state', '=', 'posted'], ['pos_order_id', '=', false], ['move_type', 'in', ['out_invoice']], ['payment_state', 'in', ['not_paid','partial']]];   // Do load open out invoices
         },
         loaded: function (self, invoices) {
-            if ((invoices) && (invoices.length > 0)) {
-                _.each(invoices, function(invoicedata) {
-                    var invoice = new models.Invoice(invoicedata, {
-                        pos: this,
-                    });
-                    this.invoices.push(invoice);
-                }, self);
-            }
+            self.invoices = invoices;
+            self.db.add_invoices(invoices);
         }
     });
 
@@ -62,17 +57,10 @@ odoo.define('pos_pay_invoice.models', function (require) {
             this.invoice_id = null;
             OrderlineModelSuper.initialize.call(this, attr, options);
         },
-        get_invoice: function() {
-            if (!this.invoice_id)
-                return null;
-            return this.pos.invoices.findWhere({
-                'id': this.invoice_id
-            });
-        },
         export_for_printing: function () {
             var data = OrderlineModelSuper.export_for_printing.call(this);
-            if (this.get_invoice()){
-                data.invoice = this.get_invoice().attributes;
+            if (this.invoice_id){
+                data.invoice = this.pos.db.get_invoice_by_id(this.invoice_id);
             }
             return data;
         },
@@ -89,11 +77,11 @@ odoo.define('pos_pay_invoice.models', function (require) {
             return OrderlineModelSuper.set_discount.call(this, discount);
         },
         set_unit_price: function(price){
-            var invoice = this.get_invoice();
-            if ((invoice) && (price > invoice.get('amount_total'))) {
-                this.pos.gui.show_popup('error',{
+            var invoice = this.pos.db.get_invoice_by_id(this.invoice_id);
+            if ((invoice) && (price > invoice.amount_residual)) {
+                this.order.trigger('ppi-error', {
                     'title': _t("Error"),
-                    'body': _t("You can not enter a higher price than the total amount of the invoice !")
+                    'body': _t("You can not pay more then the open invoice amount!")
                 });
                 return;
             }
@@ -101,7 +89,7 @@ odoo.define('pos_pay_invoice.models', function (require) {
         },
         set_quantity: function(quantity) {
             if ((this.invoice_id) && (quantity > 1)) {
-                this.pos.gui.show_popup('error',{
+                this.order.trigger('ppi-error', {
                     'title': _t("Error"),
                     'body': _t("You can not pay the invoice more than 1 time !")
                 });
@@ -122,9 +110,10 @@ odoo.define('pos_pay_invoice.models', function (require) {
         },
         init_from_JSON: function(json) {
             OrderlineModelSuper.init_from_JSON.call(this, json);
-            this.invoice_id = json['invoice_id'];
-            if (!this.get_invoice()) {
-                this.quantity = 0;
+            if (json['invoice_id'])  {
+                this.set_unit_price(json['price_unit']);
+                this.invoice_id = json['invoice_id'];
+                this.price_manually_set = true;
             }
         },
     });
@@ -149,7 +138,7 @@ odoo.define('pos_pay_invoice.models', function (require) {
             OrderModelSuper.add_product.call(this, product, options);
             if (options && options.extras && options.extras.invoice) {
                 var last_orderline = this.get_last_orderline();
-                last_orderline.invoice_id = options.extras.invoice.get('id');
+                last_orderline.invoice_id = options.extras.invoice.id;
                 this.orderlines.trigger('change', last_orderline)
             }
         },

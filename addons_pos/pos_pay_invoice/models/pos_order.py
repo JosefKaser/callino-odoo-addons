@@ -16,18 +16,11 @@ class PosOrderLine(models.Model):
         line = super(PosOrderLine, self).create(vals)
         if 'invoice_id' in vals:
             line.order_id.write({
-                'invoice_id': vals.get('invoice_id'),
+                'account_move': vals.get('invoice_id'),
             })
         return line
 
-
-class PosOrder(models.Model):
-    _inherit = "pos.order"
-
-    invoice_id = fields.Many2one('account.move', string='Invoice', readonly=True)
-
-    def action_pos_order_paid(self):
-        res = super(PosOrder, self).action_pos_order_paid()
-        if self.invoice_id:
-            self.invoice_id.invoice_payment_state = 'paid'
-        return res
+    def _export_for_ui(self, orderline):
+        line = super(PosOrderLine, self)._export_for_ui(orderline)
+        line['invoice_id'] = orderline.invoice_id.id if orderline.invoice_id else None
+        return line

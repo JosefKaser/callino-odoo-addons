@@ -21,17 +21,24 @@
             </t>
         </xpath>
     </t>
-
-    <!-- OrderReceipt (PosTicket and XmlReceipt seem to be merged into this) -->
-    <t t-extend="OrderReceipt">
-        <t t-jquery="t[t-foreach*='receipt.orderlines']" t-operation="append">
-            <t t-if="line.product_ref_text">
-                <line>
-                    <left>
-                        Ref.: <t t-esc="line.product_ref_text"/>
-                    </left>
-                </line>
+    <t t-name="OrderlineDetails" t-inherit="point_of_sale.OrderlineDetails" t-inherit-mode="extension" owl="1">
+        <xpath expr="//li[hasclass('info')]" t-operation="after">
+            <t t-if="props.line.get_product_reference()">
+                <li class="ref">
+                    <em>Reference: </em><t t-raw="props.line.get_product_reference()"/>
+                </li>
             </t>
-        </t>
+        </xpath>
+    </t>
+
+    <!-- Extend WrappedProductNameLines -->
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('orderlines')]/t" position="inside">
+            <t t-if="line.product_ref_text">
+                <span>
+                    Ref.: <t t-esc="line.product_ref_text"/>
+                </span>
+            </t>
+        </xpath>
     </t>
 </templates>

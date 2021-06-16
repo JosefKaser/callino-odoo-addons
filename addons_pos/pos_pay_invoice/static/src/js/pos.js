@@ -21,5 +21,25 @@ odoo.define('pos_pay_invoice.pos', function (require) {
             // Supercall
             PosModelSuper.prototype.initialize.call(this, session, attributes);
         },
+
+        reload_invoices: function(){
+            var self = this;
+            return new Promise(function (resolve, reject) {
+                var fields = _.find(self.models, function(model){ return model.label === 'load_invoices'; }).fields;
+                var domain = _.find(self.models, function(model){ return model.label === 'load_invoices'; }).domain();
+                self.rpc({
+                    model: 'account.move',
+                    method: 'search_read',
+                    args: [domain, fields],
+                }, {
+                    timeout: 3000,
+                    shadow: true,
+                })
+                .then(function (invoices) {
+                    self.db.update_invoices(invoices);
+                    resolve();
+                }, function (type, err) { reject(); });
+            });
+        },
     });
 });

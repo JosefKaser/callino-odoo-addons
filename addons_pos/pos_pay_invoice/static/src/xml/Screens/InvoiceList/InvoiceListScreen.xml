@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="pos_pay_invoice_invoice_list_screen_template" inherit_id="point_of_sale.template" xml:space="preserve">
+
+    <t t-name="InvoiceListScreen" owl="1">
+        <div class="invoicelist-screen screen">
+            <div class="screen-content">
+                <section class="top-content">
+                    <div class="button back" t-on-click="back">
+                        <t t-if="!env.isMobile"><i class="fa fa-angle-double-left"></i> Cancel</t>
+                        <t t-else="">
+                            <i class="fa fa-angle-double-left"></i>
+                        </t>
+                    </div>
+                    <div class="button reload" t-on-click="reload">
+                        <t t-if="!env.isMobile"><i class="fa fa-reload"></i> Reload</t>
+                        <t t-else="">
+                            <i class="fa fa-reload"></i>
+                        </t>
+                    </div>
+                    <div class="searchbox-client top-content-center">
+                        <input placeholder="Search Invoices" size="1" t-on-keyup="updateInvoiceList" />
+                        <span class="search-clear-invoice"></span>
+                    </div>
+                    <div class="button print-invoice" t-on-click="print_invoice" t-if="state.selectedInvoice">
+                        <t t-if="!env.isMobile"><i class="fa fa-print"></i> Print Invoice</t>
+                        <t t-else="">
+                            <i class="fa fa-print"></i>
+                        </t>
+                    </div>
+                    <div class="button pay-invoice" t-on-click="pay_invoice" t-if="state.selectedInvoice">
+                        <t t-if="!env.isMobile"><i class="fa fa-angle-double-right"></i> Pay Invoice</t>
+                        <t t-else="">
+                            <i class="fa fa-angle-double-right"></i>
+                        </t>
+                    </div>
+                </section>
+                <section class="full-content">
+                    <div class="client-window">
+                        <section class='subwindow list'>
+                            <div class='subwindow-container'>
+                                <div class='subwindow-container-fix scrollable-y'>
+                                    <table class='invoice-list'>
+                                        <thead>
+                                            <tr>
+                                                <th width="10%">Number</th>
+                                                <th width="20%" t-if="!env.isMobile">Date</th>
+                                                <th width="30%" t-if="!env.isMobile">Partner</th>
+                                                <th width="10%" t-if="!env.isMobile">Reference</th>
+                                                <th width="10%" class="text-right">Amount</th>
+                                                <th width="20%">Due</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='invoice-list-contents'>
+                                            <t t-foreach="invoices" t-as="invoice"
+                                               t-key="invoice.id">
+                                                <InvoiceLine invoice="invoice"
+                                                             selectedInvoice="state.selectedInvoice"
+                                                             t-on-click-invoice="clickInvoice" />
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -24,9 +24,12 @@ Pay invoice directly on in pos session
         'views/account_move.xml',
     ],
     'qweb': [
-        'static/src/xml/invoice.xml'
+        'static/src/xml/Screens/ProductScreen/InvoicesButton.xml',
+        'static/src/xml/Screens/InvoiceList/InvoiceListScreen.xml',
+        'static/src/xml/Screens/InvoiceList/InvoiceLine.xml',
+        'static/src/xml/invoice.xml',
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
     "external_dependencies": {
         "python": [],

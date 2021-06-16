@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template_InvoiceLine" xml:space="preserve">
+
+    <t t-name="InvoiceLine" owl="1">
+        <tr t-attf-class="invoice-line {{highlight}}" t-att-data-id="props.invoice.id"
+            t-on-click="trigger('click-invoice', {invoice: props.invoice})">
+            <td>
+                <t t-esc="props.invoice.name" />
+            </td>
+            <td t-if="!env.isMobile">
+                <t t-esc="props.invoice.invoice_date" />
+            </td>
+            <td t-if="!env.isMobile" style="width: 130px;">
+                <t t-esc="partner_displayname" />
+            </td>
+            <td t-if="!env.isMobile">
+                <t t-esc="props.invoice.ref or ''" />
+                <span t-if="highlight"><br/></span>
+            </td>
+            <td class="text-right">
+                <t t-esc="total" />
+                <span t-if="highlight"><br/></span>
+            </td>
+            <td>
+                <t t-esc="props.invoice.invoice_date_due" />
+                <span t-if="highlight"><br/></span>
+            </td>
+        </tr>
+    </t>
+
+</templates>
