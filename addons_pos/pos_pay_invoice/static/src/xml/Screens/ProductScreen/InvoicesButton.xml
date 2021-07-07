@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="pos_pay_invoice_invoice_button_template" inherit_id="point_of_sale.template" xml:space="preserve">
 
-	<t t-name="SearchInvoicesButton" owl="1">
+	<t t-name="MySearchInvoicesButton" owl="1">
 		<span class="control-button pos_bag odoo-theme-color">
 			<i class="fa fa-tag"></i>
 			<span>Invoices</span>

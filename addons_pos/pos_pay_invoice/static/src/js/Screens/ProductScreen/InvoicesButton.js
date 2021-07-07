@@ -19,7 +19,7 @@ odoo.define('pos_pay_invoice.InvoicesButton', function(require) {
 			this.showTempScreen('InvoiceListScreen');
 		}
 	}
-	InvoicesButton.template = 'SearchInvoicesButton';
+	InvoicesButton.template = 'MySearchInvoicesButton';
 
 	ProductScreen.addControlButton({
 		component: InvoicesButton,
