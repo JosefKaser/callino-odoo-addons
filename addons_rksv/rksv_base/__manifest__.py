@@ -6,34 +6,27 @@
     'sequence': 6,
     'summary': 'Registrierkassenpflicht Modul für Österreich',
     'website': 'https://github.com/Odoo-Austria',
-    'author': 'Wolfgang Pichler (Callino), WT-IO-IT GmbH, Wolfgang Taferner',
+    'author': 'Wolfgang Pichler (Callino)',
     'license': "Other proprietary",
     'description': """
 Registrierkasse Österreich
 ==================================
 
-Registrierkassen Modul für die Anforderungen der Österreichischen Registrierkassenpflicht
+Registrierkassen Modul für die Anforderungen der Österreichischen Registrierkassenpflicht.
+Basis Modul
 """,
     'depends': [
-        'point_of_sale',
-        'pos_product_reference',
-        'pos_invisible_products',
-        'rksv_base',
+        'base_vat',
     ],
     'test': [
     ],
     'data': [
         'security/ir.model.access.csv',
         'views/signature_provider.xml',
-        'views/pos_config.xml',
-        'views/pos_order.xml',
-        'views/templates.xml',
+        'views/res_company.xml',
+        'views/account.xml',
         'views/product.xml',
         'data/data.xml'
-    ],
-    'qweb': [
-        'static/src/xml/receipt.xml',
-        'static/src/xml/rksv.xml'
     ],
     'installable': True,
     'auto_install': False,

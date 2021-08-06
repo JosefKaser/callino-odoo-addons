@@ -4,94 +4,24 @@
         <record id="view_signature_provider_form" model="ir.ui.view">
             <field name="name">signature.provider.form</field>
             <field name="model">signature.provider</field>
+            <field name="inherit_id" ref="rksv_base.view_signature_provider_form"/>
             <field name="arch" type="xml">
-                <form string="Signature Provider">
-                    <header>
-                        <field name="bmf_last_status" widget="statusbar" nolabel="1" />
-                    </header>
-                    <sheet>
-                        <h1>
-                            <field  name="name" />
-                        </h1>
-                        <group>
-                            <group>
-                                <field name="pos_config_id" />
-                                <field name="reader" />
-                            </group>
-                            <group />
-                        </group>
-                        <notebook>
-                            <page string="Zertifikat">
-                                <group string="Subject">
-                                    <field name="subject" />
-                                </group>
-                                <group string="Meta">
-                                    <group>
-                                        <field name="serial" />
-                                        <field name="provider_name" />
-                                        <field name="issuer" />
-                                   </group>
-                                    <group>
-                                        <field name="valid_from" />
-                                        <field name="valid_until" />
-                                    </group>
-                                    
-                                </group>
-                                <group string="Content">
-                                    <field name="x509" nolabel="1" />
-                                </group>
-                            </page>
-                            <page string="BMF">
-                                <group>
-                                    <field name="bmf_last_update" />
-                                    <field name="bmf_message" />
-                                </group>
-                            </page>
-                        </notebook>
-                    </sheet>
-                    <div class="oe_chatter">
-                        <field
-                            name="message_follower_ids"
-                            widget="mail_followers"
-                            groups="base.group_user" />
-                        <field
-                            name="message_ids"
-                            widget="mail_thread" />
-                    </div>
-                </form>
+                <field name="reader" position="before">
+                    <field name="pos_config_id" />
+                </field>
             </field>
         </record>
-        <record id="view_signature_provider_tree" model="ir.ui.view">
-            <field name="name">signature.provider.tree</field>
-            <field name="model">signature.provider</field>
-            <field name="arch" type="xml">
-                <tree
-                    string="Signaturerstellungseinheiten"
-                    decoration-bf="True"
-                    decoration-success="bmf_last_status == 'IN_BETRIEB'"
-                    decoration-info="bmf_last_status == 'UNBEKANNT'"
-                    decoration-danger="bmf_last_status == 'AUSFALL'">
-                    <field name="bmf_last_status" invisible="1"/>
-                    <field name="subject"/>
-                    <field name="serial"/>
-                    <field name="reader"/>
-                    <field name="valid_until"/>
-                    <field name="bmf_message"/>
-                    <field name="bmf_last_update"/>
-                </tree>
-            </field>
-        </record>
+
         <record id="action_signature_provider" model="ir.actions.act_window">
             <field name="name">Signature Provider</field>
             <field name="res_model">signature.provider</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
         </record>
-        
+
         <!-- Signature Provider Menu -->
         <menuitem name="Signature Providers" action="action_signature_provider"
                   parent="point_of_sale.menu_point_config_product"
                   id="menu_signature_providers" sequence="50"/>
-    
     </data>
 </odoo>

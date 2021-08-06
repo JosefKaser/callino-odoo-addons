@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit Form View to Modify it -->
+        <record id="rksv_baseview_signature_provider_form" model="ir.ui.view">
+            <field name="name">rksv_baseview_signature_provider_form</field>
+            <field name="model">signature.provider</field>
+            <field name="inherit_id" ref="rksv_base.view_signature_provider_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="status_signatureinheit" type="object" string="Status Abfragen"/>
+                </xpath>
+
+                <xpath expr="//field[@name='bmf_message']" position="after">
+                    <field name="bmf_test_mode"/>
+                </xpath>
+                <xpath expr="//field[@name='reader']" position="after">
+                    <field name="box_id"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

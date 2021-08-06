@@ -24,23 +24,12 @@
                             <field name="bmf_tax_number" placeholder="NNNNNNNNN"/>
                             <field name="bmf_vat_number" placeholder="ATU12345678"/>
                         </group>
+                        <label for="signature_provider_ids"/>
+                        <field name="signature_provider_ids" nolabel="1"/>
                     </page>
                 </notebook>
             </field>
         </record>
 
-        <!-- TODO -->
-        <!--<record id="base_vat_rksv_at" model="ir.ui.view">
-            <field name="name">VAT RKSV</field>
-            <field name="model">res.company</field>
-            <field name="inherit_id" ref="base_vat.company_form_vat"/>
-            <field name="arch" type="xml">
-
-                <field name="vat_check_vies" position="before">
-                    <field name="rksv_at"/>
-                </field>
-
-            </field>
-        </record>-->
     </data>
 </odoo>

@@ -1,39 +1,33 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Registrierkasse Österreich',
+    'name': 'RKSV Bar Rechnungen',
     'version': '12.0.0.1',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Registrierkassenpflicht Modul für Österreich',
     'website': 'https://github.com/Odoo-Austria',
-    'author': 'Wolfgang Pichler (Callino), WT-IO-IT GmbH, Wolfgang Taferner',
+    'author': 'Wolfgang Pichler (Callino)',
     'license': "Other proprietary",
     'description': """
 Registrierkasse Österreich
 ==================================
 
-Registrierkassen Modul für die Anforderungen der Österreichischen Registrierkassenpflicht
+Registrierkassen Modul für die Anforderungen der Österreichischen Registrierkassenpflicht.
+Ermöglicht das Signieren von Bar Rechnungen
 """,
     'depends': [
-        'point_of_sale',
-        'pos_product_reference',
-        'pos_invisible_products',
+        'account',
         'rksv_base',
     ],
     'test': [
     ],
     'data': [
         'security/ir.model.access.csv',
+        'views/account_invoice.xml',
+        'views/account_journal.xml',
+        'views/rksv_box.xml',
         'views/signature_provider.xml',
-        'views/pos_config.xml',
-        'views/pos_order.xml',
-        'views/templates.xml',
-        'views/product.xml',
-        'data/data.xml'
-    ],
-    'qweb': [
-        'static/src/xml/receipt.xml',
-        'static/src/xml/rksv.xml'
+        'data/cron.xml',
     ],
     'installable': True,
     'auto_install': False,
