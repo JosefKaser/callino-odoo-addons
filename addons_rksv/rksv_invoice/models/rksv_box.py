@@ -32,6 +32,7 @@ class RKSVBox(models.Model):
     host = fields.Char(string='Host', compute='_compute_host', store=False)
     available = fields.Boolean('Available', readonly=True)
     last_ping = fields.Datetime('Last Ping')
+    last_error = fields.Char('Last Error')
     signature_provider_ids = fields.One2many('signature.provider', 'box_id', string="Signaturen")
 
 
@@ -113,6 +114,13 @@ class RKSVBox(models.Model):
                     else:
                         sprovider.write(sproviderData)
                     sprovider.fetch_bmf_status()
+                box.write({
+                    'state': 'ready',
+                    'last_error': '',
+                })
                 box.state = 'ready'
-            except:
-                box.state = 'error'
+            except Exception as e:
+                box.write({
+                    'state': 'error',
+                    'last_error': str(e),
+                })

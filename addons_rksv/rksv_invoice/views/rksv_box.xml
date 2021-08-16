@@ -15,6 +15,7 @@
                         <div class="oe_title">
                             <h1><field name="name"/></h1>
                         </div>
+                        <field name="last_error" nolabel="1"/>
                         <group>
                             <field name="ipv4"/>
                             <field name="proto"/>
