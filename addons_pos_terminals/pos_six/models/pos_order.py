@@ -24,22 +24,22 @@ class PosOrder(models.Model):
     def add_payment(self, data):
         _logger.info("add payment got called with data %r", data)
         orig_payment_name = None
-        if 'six_ref_number' in data and data['ref_number']:
+        if 'ref_number' in data and data['ref_number']:
             orig_payment_name = (data['payment_name'] if 'payment_name' in data else None)
             data['payment_name'] = data['ref_number']
         statement_id = super(PosOrder, self).add_payment(data)
         # Here do update the statement - include six data
-        if 'six_ref_number' in data and data['ref_number']:
+        if 'ref_number' in data and data['ref_number']:
             name = self.name + ': ' + (data.get('payment_name', '') or '')
             statement_line_obj = self.env['account.bank.statement.line']
-            line_statement_id = statement_line_obj.search([('name', '=', name),('statement_id','=',statement_id)])
+            line_statement_id = statement_line_obj.search([('name', '=', name), ('statement_id', '=', statement_id)])
             # do write six ref number - and bring back old name
             line_statement_id.write({
-                'six_ref_number': data['ref_number'],
-                'six_receipt': data['receipt'],
-                'six_receipt_html': data['receipt_html'],
-                'six_receipt_merchant': data['receipt_merchant'],
-                'six_receipt_merchant_html': data['receipt_merchant_html'],
+                'six_ref_number': data.get('ref_number', ''),
+                'six_receipt': data.get('receipt', ''),
+                'six_receipt_html': data.get('receipt_html', ''),
+                'six_receipt_merchant': data.get('receipt_merchant', ''),
+                'six_receipt_merchant_html': data.get('receipt_merchant_html', ''),
                 'name': self.name + ': ' + (orig_payment_name or ''),
             })
         return statement_id
