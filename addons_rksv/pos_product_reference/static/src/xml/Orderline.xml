@@ -7,7 +7,7 @@
                 <li class="ref">
                     <em>Reference: </em>
                     <t t-if="props.line.get_product().product_ref_textarea">
-                        <textarea class="pro_ref" type="text" name="pro_ref"><t t-raw="props.line.get_product_reference() or ''"/></textarea>
+                        <textarea class="pro_ref" type="text" name="pro_ref" t-on-change="captureProductRefChange"><t t-raw="props.line.get_product_reference() or ''"/></textarea>
                     </t>
                     <t t-else="">
                         <input class="pro_ref" type="text" name="pro_ref" t-att-value="props.line.get_product_reference()" t-on-change="captureProductRefChange"/>

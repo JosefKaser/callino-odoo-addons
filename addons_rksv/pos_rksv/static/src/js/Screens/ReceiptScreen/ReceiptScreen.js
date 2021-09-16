@@ -8,7 +8,7 @@ odoo.define('pos_rksv.ReceiptScreenWidget', function(require) {
         class extends ReceiptScreen {
             _shouldAutoPrint() {
                 if (!this.env.pos.config.iface_rksv) {
-                    return super._shouldAutoPrint;
+                    return super._shouldAutoPrint();
                 }
                 return true && !this.env.pos.get_order()._printed;
             }
@@ -16,7 +16,7 @@ odoo.define('pos_rksv.ReceiptScreenWidget', function(require) {
                 if (this.props.forceClose) {
                     return true;
                 }
-                return super._shouldCloseImmediately;
+                return super._shouldCloseImmediately();
             }
         };
 
