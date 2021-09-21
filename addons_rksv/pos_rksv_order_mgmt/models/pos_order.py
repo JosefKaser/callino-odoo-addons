@@ -1,5 +1,4 @@
 from odoo import api, fields, models
-import base64
 
 
 class PosOrder(models.Model):
