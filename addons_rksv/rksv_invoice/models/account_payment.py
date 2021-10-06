@@ -88,6 +88,8 @@ class AccountPayment(models.Model):
 
     @api.multi
     def post(self):
+        if self.env.context.get('disable_rksv', False):
+            return super(AccountPayment, self).post()
         for payment in self:
             if payment.journal_id.rksv_at and payment.journal_id.type == 'cash':
                 if payment.journal_id.rksv_state != 'ready':
