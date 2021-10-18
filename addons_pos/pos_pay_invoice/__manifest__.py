@@ -27,7 +27,6 @@ Pay invoice directly on in pos session
         'static/src/xml/Screens/ProductScreen/InvoicesButton.xml',
         'static/src/xml/Screens/InvoiceList/InvoiceListScreen.xml',
         'static/src/xml/Screens/InvoiceList/InvoiceLine.xml',
-        'static/src/xml/invoice.xml',
     ],
     'installable': True,
     'auto_install': False,
