@@ -16,6 +16,28 @@ except ImportError:
 _logger = logging.getLogger(__name__)
 
 
+# We have to overwrite the original function with an monkey patch here
+def _check_modules_to_install(self):
+    # determine modules to install
+    expected = [
+        fname[7:]           # 'module_account' -> 'account'
+        for fname in self.fields_get_keys()
+        if fname.startswith('module_')
+        if any(pos_config[fname] for pos_config in self)
+    ]
+    if 'pos_iot' in expected:
+        # Do not auto install the pos_iot module
+        expected.remove('pos_iot')
+    if expected:
+        STATES = ('installed', 'to install', 'to upgrade')
+        modules = self.env['ir.module.module'].sudo().search([('name', 'in', expected)])
+        modules = modules.filtered(lambda module: module.state not in STATES)
+        if modules:
+            modules.button_immediate_install()
+            # just in case we want to do something if we install a module. (like a refresh ...)
+            return True
+    return False
+
 # We have to monkey patch this here to allow the write for bmf_gemeldet and state
 def pos_config_write(self, vals):
     if 'bmf_gemeldet' in vals or 'state' in vals or 'signature_provider_id' in vals or 'cashbox_mode' in vals or len(vals) == 0:
@@ -31,6 +53,7 @@ def pos_config_write(self, vals):
     return result
 
 PosConfig.write = pos_config_write
+PosConfig._check_modules_to_install = _check_modules_to_install
 
 
 class POSConfig(models.Model):
