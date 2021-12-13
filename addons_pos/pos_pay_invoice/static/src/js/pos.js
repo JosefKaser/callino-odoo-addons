@@ -1,4 +1,4 @@
-/*
+    /*
  Do extend the main pos Model here !
  */
 odoo.define('pos_pay_invoice.pos', function (require) {

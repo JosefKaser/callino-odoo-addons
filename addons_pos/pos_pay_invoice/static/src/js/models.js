@@ -87,7 +87,7 @@ odoo.define('pos_pay_invoice.models', function (require) {
             }
             return OrderlineModelSuper.set_unit_price.call(this, price);
         },
-        set_quantity: function(quantity) {
+        set_quantity: function(quantity, keep_price) {
             if ((this.invoice_id) && (quantity > 1)) {
                 this.order.trigger('ppi-error', {
                     'title': _t("Error"),
@@ -95,7 +95,7 @@ odoo.define('pos_pay_invoice.models', function (require) {
                 });
                 return;
             }
-            return OrderlineModelSuper.set_quantity.call(this, quantity);
+            return OrderlineModelSuper.set_quantity.call(this, quantity, keep_price);
         },
         can_be_merged_with: function(orderline){
             if (this.invoice_id) {

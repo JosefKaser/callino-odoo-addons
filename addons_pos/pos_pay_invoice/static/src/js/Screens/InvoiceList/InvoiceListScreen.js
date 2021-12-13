@@ -47,9 +47,10 @@ odoo.define('pos_pay_invoice.InvoiceListScreen', function(require) {
                 quantity: 1,
                 price_extra: this.state.selectedInvoice.amount_residual,
                 lst_price: 0,
-                price: 0,
+                price: undefined,
                 extras: {
                     invoice: this.state.selectedInvoice,
+                    invoice_id: this.state.selectedInvoice.id,
                     product_ref_text: this.state.selectedInvoice.name,
                     price_manually_set: true,
                 },
