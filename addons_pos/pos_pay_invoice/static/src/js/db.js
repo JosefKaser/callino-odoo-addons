@@ -48,14 +48,24 @@ odoo.define('pos_pay_invoice.db', function (require) {
             }
         },
 
-        get_invoices: function(max_count){
-            max_count = max_count ? Math.min(this.invoice_sorted.length, max_count) : this.invoice_sorted.length;
+        get_invoices: function(){
             var invoices = [];
-            for (var i = 0; i < max_count; i++) {
+            for (var i = 0; i < this.invoice_sorted.length; i++) {
                 invoices.push(this.invoice_by_id[this.invoice_sorted[i]]);
             }
             return invoices;
         },
 
+        search_invoices: function(term){
+            var invoices = [];
+            var invoice;
+            for (var i = 0; i < this.invoice_sorted.length; i++) {
+                invoice = this.invoice_by_id[this.invoice_sorted[i]];
+                if (invoice.name.includes(term) ||  invoice.partner_id[1].includes(term)) {
+                    invoices.push(invoice);
+                }
+            }
+            return invoices;
+        },
     });
 });

@@ -34,7 +34,7 @@
                         </t>
                     </div>
                 </section>
-                <section class="full-content">
+                <section class="full-content" style="overflow:scroll;">
                     <div class="client-window">
                         <section class='subwindow list'>
                             <div class='subwindow-container'>

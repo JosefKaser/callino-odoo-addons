@@ -13,7 +13,7 @@ odoo.define('pos_pay_invoice.InvoiceListScreen', function(require) {
                 query: null,
                 selectedInvoice: null,
             };
-            this.updateInvoiceList = debounce(this.updateInvoiceList, 70);
+            this.updateInvoiceList = debounce(this.updateInvoiceList, 150);
         }
         mounted() {
             this.updateInvoiceList();

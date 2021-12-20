@@ -26,7 +26,7 @@ odoo.define('pos_pay_invoice.models', function (require) {
             } else {
                 return _t("Unknown");
             }
-        }
+        },
     });
 
     /*
