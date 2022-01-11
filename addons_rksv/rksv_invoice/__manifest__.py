@@ -25,6 +25,7 @@ Ermöglicht das Signieren von Bar Rechnungen
         'security/ir.model.access.csv',
         'views/account_invoice.xml',
         'views/account_journal.xml',
+        'views/account_payment.xml',
         'views/rksv_box.xml',
         'views/signature_provider.xml',
         'data/cron.xml',

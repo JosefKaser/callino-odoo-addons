@@ -85,15 +85,21 @@ class AccountPayment(models.Model):
         string="Summenspeicher",
         readonly=True
     )
+    rksv_at = fields.Boolean(related='journal_id.rksv_at')
 
     @api.multi
     def post(self):
         if self.env.context.get('disable_rksv', False):
             return super(AccountPayment, self).post()
+        self.rksv_sign_payment()
+        return super(AccountPayment, self).post()
+
+    def rksv_sign_payment(self):
+        if self.env.context.get('disable_rksv', False):
+            return
         for payment in self:
             if payment.journal_id.rksv_at and payment.journal_id.type == 'cash':
                 if payment.journal_id.rksv_state != 'ready':
                     raise UserError('Belegsignatur meldet einen Fehler.')
                 beleg = payment.journal_id.register_payment(payment)
                 payment.update(beleg)
-        return super(AccountPayment, self).post()
