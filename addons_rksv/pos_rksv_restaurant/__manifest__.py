@@ -19,8 +19,12 @@ Erweiterung zum Basis RKSV Modul für die Restaurant Erweiterung
     ],
     'data': [
         'views/pos_config.xml',
-        'views/templates.xml',
     ],
+    'assets': {
+        'point_of_sale.assets': [
+            'pos_rksv_restaurant/static/src/js/rksv.js',
+        ],
+    },
     'qweb': [
     ],
     'installable': True,

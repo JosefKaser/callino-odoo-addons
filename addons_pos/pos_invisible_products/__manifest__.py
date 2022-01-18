@@ -18,9 +18,13 @@ Products can be set invisible while still be loaded to PoS properly
     'test': [
     ],
     'data': [
-        'views/templates.xml',
         'views/product.xml',
     ],
+    'assets': {
+        'point_of_sale.assets': [
+            'pos_invisible_products/static/src/js/pos_invisible_products.js'
+        ]
+    },
     'installable': True,
     'auto_install': False,
     "external_dependencies": {

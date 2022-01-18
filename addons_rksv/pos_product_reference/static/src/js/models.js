@@ -8,15 +8,15 @@ odoo.define('pos_product_reference.models', function (require) {
     */
     models.load_fields("product.product", ["product_ref", "product_ref_textarea"]);
 
-    var OrderlineSuper = models.Orderline;
+    var OrderlineSuper = models.Orderline.prototype;
     models.Orderline = models.Orderline.extend({
         initialize: function (attr, options) {
             this.product_ref_text = '';
             // Supercall must be after the var init step - because it does load the values from json
-            OrderlineSuper.prototype.initialize.call(this, attr, options);
+            OrderlineSuper.initialize.call(this, attr, options);
         },
         clone: function () {
-            var data = OrderlineSuper.prototype.clone.call(this);
+            var data = OrderlineSuper.clone.call(this);
             data.product_ref_text = this.product_ref_text;
             return data;
         },
@@ -28,16 +28,16 @@ odoo.define('pos_product_reference.models', function (require) {
             return this.product_ref_text;
         },
         export_as_JSON: function () {
-            var data = OrderlineSuper.prototype.export_as_JSON.call(this);
+            var data = OrderlineSuper.export_as_JSON.call(this);
             data.product_ref_text = this.get_product_reference();
             return data;
         },
         init_from_JSON: function(json) {
-            OrderlineSuper.prototype.init_from_JSON.call(this, json);
+            OrderlineSuper.init_from_JSON.call(this, json);
             this.product_ref_text = json.product_ref_text;
         },
         export_for_printing: function () {
-            var data = OrderlineSuper.prototype.export_for_printing.call(this);
+            var data = OrderlineSuper.export_for_printing.call(this);
             data.product_ref_text = this.get_product_reference();
             return data;
         }

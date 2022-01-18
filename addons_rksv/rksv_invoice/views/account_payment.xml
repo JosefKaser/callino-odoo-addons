@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="view_account_payment_form" model="ir.ui.view">
+            <field name="name">view_account_payment_form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='state']" position="before">
+                    <button name="rksv_sign_payment" class="oe_highlight" string="RKSV Signieren" type="object" attrs="{'invisible': [('receipt_id', '!=', False),('rksv_at', '=', False)]}"/>
+                </xpath>
+                <xpath expr="//group[@name='group2']" position="after">
+                    <group name="rksv" string="RKSV" attrs="{'invisible': [('receipt_id', '=', False)]}">
+                        <field name="rksv_at"/>
+                        <field name="receipt_id"/>
+                        <field name="cashbox_mode"/>
+                        <field name="qr_code_value"/>
+                        <field name="ocr_code_value"/>
+                        <field name="qr_code_image" widget="image"/>
+                        <field name="signatureSerial"/>
+                        <field name="provider_id"/>
+                        <field name="turnOverValue"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
