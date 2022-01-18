@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class Company(models.Model):
@@ -19,3 +16,4 @@ class Company(models.Model):
 
     bmf_tax_number = fields.Char('RKSV Tax Identifier', size=10)
     bmf_vat_number = fields.Char('RKSV VAT Identifier', readonly=True, related='vat')
+    signature_provider_ids = fields.One2many('signature.provider', 'company_id', string="Signaturen")

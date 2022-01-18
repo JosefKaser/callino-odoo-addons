@@ -18,7 +18,7 @@ Registrierkassen Modul für die Anforderungen der Österreichischen Registrierka
         'point_of_sale',
         'pos_product_reference',
         'pos_invisible_products',
-        'base_vat',
+        'rksv_base',
     ],
     'test': [
     ],
@@ -27,8 +27,6 @@ Registrierkassen Modul für die Anforderungen der Österreichischen Registrierka
         'views/signature_provider.xml',
         'views/pos_config.xml',
         'views/pos_order.xml',
-        'views/res_company.xml',
-        'views/account.xml',
         'views/product.xml',
         'views/templates.xml',
         'data/data.xml'
