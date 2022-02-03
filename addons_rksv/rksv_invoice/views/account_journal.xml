@@ -8,6 +8,10 @@
             <field name="model">account.journal</field>
             <field name="inherit_id" ref="account.view_account_journal_form"/>
             <field name="arch" type="xml">
+                <xpath expr="//field[@name='type']" position="after">
+                    <field name="rksv_at" attrs="{'invisible': [('type', '!=' , 'cash')]}"/>
+                </xpath>
+
                 <xpath expr="//notebook" position="inside">
                     <page name="rksv" string="RKSV" attrs="{'invisible': ['|',('type', '!=', 'cash'),('rksv_at','=',False)]}">
                         <header>
@@ -28,7 +32,6 @@
                                 <field name="posbox_registered"/>
                                 <field name="bmf_gemeldet"/>
                                 <field name="bmf_test_mode"/>
-                                <field name="rksv_at"/>
                             </group>
                         </group>
                     </page>

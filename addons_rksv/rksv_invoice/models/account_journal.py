@@ -31,7 +31,7 @@ class AccountJournal(models.Model):
     posbox_registered = fields.Boolean(string='Bei PosBox angemeldet', readonly=True, default=False)
     bmf_gemeldet = fields.Boolean(string='Registrierkasse beim BMF angemeldet', readonly=True)
     rksv_status_text = fields.Char(string="RKSV Status")
-    rksv_at = fields.Boolean('RKSV AT', related='company_id.rksv_at', store=True)
+    rksv_at = fields.Boolean('RKSV AT', default=False)
     rksv_state = fields.Selection([
         ('new', 'Neu'),
         ('posbox_registered', 'An PosBox angemeldet'),

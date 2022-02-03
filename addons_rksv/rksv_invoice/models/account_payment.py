@@ -87,11 +87,11 @@ class AccountPayment(models.Model):
     )
     rksv_at = fields.Boolean(related='journal_id.rksv_at')
 
-    def post(self):
+    def action_post(self):
         if self.env.context.get('disable_rksv', False):
-            return super(AccountPayment, self).post()
+            return super(AccountPayment, self).action_post()
         self.rksv_sign_payment()
-        return super(AccountPayment, self).post()
+        return super(AccountPayment, self).action_post()
 
     def rksv_sign_payment(self):
         if self.env.context.get('disable_rksv', False):

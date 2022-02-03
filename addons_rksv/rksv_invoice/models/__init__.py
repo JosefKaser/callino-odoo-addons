@@ -4,3 +4,4 @@ from . import account_payment
 from . import account_journal
 from . import rksv_box
 from . import signature_provider
+from . import account_move

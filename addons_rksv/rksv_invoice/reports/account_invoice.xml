@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="report_invoice_document_rksv" inherit_id="account.report_invoice_document" priority="20">
+            <xpath expr="//div[@id='qrcode']" position="after">
+                <t t-if="o._get_rksv_payments()">
+                    <table style="border-spacing: 10px;border-collapse: separate;">
+                        <tr>
+                            <th width="20%">Datum</th>
+                            <th width="15%">Zahlart</th>
+                            <th width="15%">Betrag</th>
+                            <th width="50%"></th>
+                        </tr>
+                        <t t-foreach="o._get_rksv_payments()" t-as="payment">
+                            <tr>
+                                <td><span t-field="payment.move_id.date"/></td>
+                                <td><span t-field="payment.journal_id.name"/></td>
+                                <td><span t-field="payment.amount"/></td>
+                                <td>
+                                    <t t-if="payment.qr_code_image">
+                                        <img t-attf-src="data:image/png;base64,{{payment.qr_code_image}}" t-att-alt="payment.ocr_code_value" style="width:2cm;height:2cm;float:left;"/>
+                                        <div style="font-size:10px;">
+                                            RKSV Beleg Nr.: <span t-field="payment.receipt_id"/><br/>
+                                            Signature Serial: <span t-field="payment.signatureSerial"/><br/>
+                                            KassenID: <span t-field="payment.journal_id.cashregisterid"/><br/>
+                                        </div>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </table>
+                </t>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

@@ -10,10 +10,10 @@
             <field name="arch" type="xml">
 
                 <xpath expr="//field[@name='state']" position="before">
-                    <button name="rksv_sign_payment" class="oe_highlight" string="RKSV Signieren" type="object" attrs="{'invisible': [('receipt_id', '!=', False),('rksv_at', '=', False)]}"/>
+                    <button name="rksv_sign_payment" class="oe_highlight" string="RKSV Signieren" type="object" attrs="{'invisible': ['|',('receipt_id', '>', 0),('rksv_at', '=', False)]}"/>
                 </xpath>
                 <xpath expr="//group[@name='group3']" position="after">
-                    <group name="rksv" string="RKSV" attrs="{'invisible': [('receipt_id', '=', False)]}">
+                    <group name="rksv" string="RKSV" attrs="{'invisible': [('receipt_id', '==', 0)]}">
                         <field name="rksv_at"/>
                         <field name="receipt_id"/>
                         <field name="cashbox_mode"/>

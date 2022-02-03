@@ -16,7 +16,6 @@ Registrierkassen Modul für die Anforderungen der Österreichischen Registrierka
 Basis Modul
 """,
     'depends': [
-        'pos_invisible_products',
         'base_vat',
     ],
     'test': [

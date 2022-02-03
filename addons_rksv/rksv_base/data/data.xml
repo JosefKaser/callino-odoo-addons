@@ -16,8 +16,6 @@
             <field name="description">Produkt für den Startbeleg</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="rksv_product_type">startreceipt</field>
             <field name="default_code">RKSV001</field>
         </record>
@@ -33,8 +31,6 @@
             <field name="description">Produkt für den Monatsbeleg</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV002</field>
             <field name="rksv_product_type">monthreceipt</field>
         </record>
@@ -50,8 +46,6 @@
             <field name="description">Produkt für den Jahresbeleg</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV003</field>
             <field name="rksv_product_type">yearreceipt</field>
         </record>
@@ -67,8 +61,6 @@
             <field name="description">Produkt für den Nullbeleg</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV009</field>
             <field name="rksv_product_type">nullreceipt</field>
         </record>
@@ -84,8 +76,6 @@
             <field name="description">Produkt für Umsätze zu 20%</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV004</field>
             <field name="rksv_product_type">product</field>
         </record>
@@ -100,8 +90,6 @@
             <field name="description">Produkt für Umsätze zu 10%</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV005</field>
             <field name="rksv_product_type">product</field>
         </record>
@@ -116,8 +104,6 @@
             <field name="description">Produkt für Umsätze zu 13%</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV006</field>
             <field name="rksv_product_type">product</field>
         </record>
@@ -132,8 +118,6 @@
             <field name="description">Produkt für Umsätze zu 0%</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV007</field>
             <field name="rksv_product_type">product</field>
         </record>
@@ -148,8 +132,6 @@
             <field name="description">Produkt Rechnung die am POS bezahlt wird</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="available_in_pos" eval="True"/>
-            <field name="pos_product_invisible" eval="True"/>
             <field name="default_code">RKSV008</field>
             <field name="rksv_product_type">nullreceipt</field>
         </record>

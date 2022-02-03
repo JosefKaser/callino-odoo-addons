@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 import logging
 from odoo.exceptions import UserError
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
 
@@ -42,9 +43,10 @@ class SignatureProvider(models.Model):
             box = signature.box_id
             params = signature._get_signature_params()
             result = box.query_box("/hw_proxy/status_signatureinheit", params)
+            _logger.info("Got Result: %s", result)
             if result['success']:
                 signature.update({
-                    'bmf_message': result['status']['status'],
-                    'bmf_last_status': result['status']['ts_status'],
+                    'bmf_message': result['message'],
+                    'bmf_last_status': result['status']['status'],
+                    'bmf_last_update': datetime.strptime(result['status']['ts_status'], DEFAULT_SERVER_DATETIME_FORMAT),
                 })
-            _logger.info("Got Result: %s", result)
