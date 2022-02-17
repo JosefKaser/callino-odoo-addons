@@ -31,6 +31,9 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
         }
         _onChangeStatus(posProxy, statusChange) {
             this._set_smart_status(statusChange.newValue);
+            // We do forward the posProxy status change here to the RKSV handler with a reference to this
+            // So the RKSV Handler is able to open screens
+            this.env.pos.rksv.proxy_status_change(posProxy, statusChange, this);
         }
         set_status(status, message) {
             this.state.status = status;

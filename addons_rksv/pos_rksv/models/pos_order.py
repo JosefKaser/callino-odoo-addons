@@ -10,6 +10,7 @@ class POSOrder(models.Model):
     _name = 'pos.order'
     _inherit = 'pos.order'
 
+    rksv_at = fields.Boolean('RKSV AT', related='company_id.rksv_at')
     ocr_code_value = fields.Text(
         string="OCR Code Value",
         readonly=True

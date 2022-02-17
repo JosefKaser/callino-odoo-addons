@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Registrierkasse Österreich',
-    'version': '14.0.1.0',
+    'name': 'Registrierkasse Österreich POS Addon',
+    'version': '15.0.1.0',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Registrierkassenpflicht Modul für Österreich',
@@ -9,15 +9,14 @@
     'author': 'Wolfgang Pichler (Callino), WT-IO-IT GmbH, Wolfgang Taferner',
     'license': "Other proprietary",
     'description': """
-Registrierkasse Österreich
-==================================
+Registrierkasse Österreich POS Addon
+====================================
 
 Registrierkassen Modul für die Anforderungen der Österreichischen Registrierkassenpflicht
 """,
     'depends': [
         'point_of_sale',
         'pos_product_reference',
-        'pos_invisible_products',
         'rksv_base',
     ],
     'test': [

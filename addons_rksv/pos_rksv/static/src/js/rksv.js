@@ -61,122 +61,121 @@ odoo.define('pos_rksv.rksv', function (require) {
                     self.statuses.kasse = false;
                 }
             });
-            if (this.proxy){
-                this.proxy.on('change:status', this, function (eh, status) {
-                    // Ignore the status change when rksv is not enabled
-                    if (!self.pos.config.iface_rksv) {
-                        return;
-                    }
-                    self.last_proxy_status = status.newValue;
-                    // Do check posbox and rksv status - and rksv module must be preset
-                    if ((status.newValue.status === "connected") && (status.newValue.drivers.rksv)) {
-                        self.statuses.posbox = true;
-                    } else {
-                        self.statuses.posbox = false;
-                    }
-                    // Check RKSV Status
-                    if (status.newValue.status === 'connected' && (!(self.pos.config.state === "failure"  || self.pos.config.state === "inactive"))) {
-                        var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
-                        // Connected or setup are ok - setup means we are connected - but we need some additional love...
-                        if ((rksvstatus === 'connected') || (rksvstatus === 'setup')) {
-                            self.statuses.rksv = true;
-                        } else {
-                            self.statuses.rksv = false;
-                        }
-                    } else {
-                        self.statuses.rksv = false;
-                    }
-                    // Extra check here for a valid cashregisterid
-                    if ((!self.pos.config.cashregisterid) || (self.pos.config.cashregisterid.trim() === "")) {
-                        self.statuses.rksv = false;
-                    }
-                    // Check for month product
-                    if ((self.statuses['rksv_products_exists']===false)
-                        && (self.pos.config.start_product_id) && (self.pos.db.get_product_by_id(self.pos.config.start_product_id[0]))
-                        && (self.pos.config.month_product_id) && (self.pos.db.get_product_by_id(self.pos.config.month_product_id[0]))
-                        && (self.pos.config.null_product_id) && (self.pos.db.get_product_by_id(self.pos.config.null_product_id[0]))
-                        && (self.pos.config.year_product_id) && (self.pos.db.get_product_by_id(self.pos.config.year_product_id[0]))) {
-                        self.statuses['rksv_products_exists'] = true;
-                    }
-                    // Check status reponse from proxy - which signatures does the proxy has available ?
-                    if ((status.newValue.drivers.rksv) && (status.newValue.drivers.rksv.cards)) {
-                        // Do create Backbone Signature Models out of this
-                        var signatures = new Array();
-                        var currentSignature = self.pos.get('signature');
-                        $.each(status.newValue.drivers.rksv.cards, function(serial, signature) {
-                            var newSignature = new models.Signature(signature.cardinfo, {
-                                pos: self.pos
-                            });
-                            signatures.push(newSignature);
-                            // Check if this is an active signature - forward status if it is
-                            if ((currentSignature) && (currentSignature.get('serial') == newSignature.get('serial'))) {
-                                currentSignature.set({
-                                    'bmf_last_status': signature.cardinfo['bmf_last_status']
-                                })
-                            }
-                        });
-                        self.pos.signatures.set(signatures);
-                    }
-                    // Here do check for the start receipt flag - if it is set - then generate the start receipt for this cash register !
-                    if ((self.start_receipt_in_progress === false) &&
-                        (self.all_ok()) &&
-                        (status.newValue.drivers.rksv) &&
-                        (status.newValue.drivers.rksv.start_receipt_needed !== undefined) &&
-                        (status.newValue.drivers.rksv.start_receipt_needed === true)) {
-                        self.create_start_receipt();
-                    }
-                    if ((self.start_receipt_in_progress === false) &&
-                        (self.all_ok()) &&
-                        (status.newValue.drivers.rksv) &&
-                        (status.newValue.drivers.rksv.start_receipt_needed !== undefined) &&
-                        (status.newValue.drivers.rksv.start_receipt_needed === false) &&
-                        (status.newValue.drivers.rksv.has_valid_start_receipt !== undefined) &&
-                        (status.newValue.drivers.rksv.has_valid_start_receipt === false)) {
-                        self.start_receipt_in_progress = true;
-                        self.bmf_register_start_receipt_rpc().then(
-                            function done() {
-                                self.start_receipt_in_progress = false;
-                                Gui.showPopup('RKSVFailureWidget', {
-                                    'title': "Erfolg",
-                                    'body':  "Startbeleg wurde erfolgreich eingereicht!",
-                                });
-                            },
-                            function failed(message) {
-                                self.start_receipt_in_progress = false;
-                                // Set setup state
-                                self.pos.set('cashbox_mode', 'setup');
-                                // Display error popup for user
-                                Gui.showPopup('RKSVFailureWidget', {
-                                    'title': "Fehler",
-                                    'body':  message
-                                });
-                            }
-                        );
-                    }
-                    if (
-                        (self.all_ok()) &&
-                        (status.newValue.drivers.rksv) &&
-                        (status.newValue.drivers.rksv.start_receipt_needed !== undefined) &&
-                        (status.newValue.drivers.rksv.start_receipt_needed === false)
-                    ){
-                        // Here do check for the year receipt flag - if it is set - then generate the year receipt for this cash register !
-                        if ((self.year_receipt_in_progress === false) &&
-                            (self.all_ok()) &&
-                            (status.newValue.drivers.rksv) &&
-                            (status.newValue.drivers.rksv.year_receipt_needed) &&
-                            (status.newValue.drivers.rksv.year_receipt_needed === true)) {
-                            self.create_year_receipt();
-                        }
-                        // Here do check for the month receipt flag - if it is set - then generate the month receipt for this cash register !
-                        if ((self.month_receipt_in_progress === false) &&
-                            (self.all_ok()) &&
-                            (status.newValue.drivers.rksv) &&
-                            (status.newValue.drivers.rksv.month_receipt_needed) &&
-                            (status.newValue.drivers.rksv.month_receipt_needed === true)) {
-                            self.create_month_receipt();
-                        }
+        },
+        proxy_status_change: function (eh, status, statusWidget) {
+            var self = this;
+            // Ignore the status change when rksv is not enabled
+            if (!self.pos.config.iface_rksv) {
+                return;
+            }
+            self.last_proxy_status = status.newValue;
+            // Do check posbox and rksv status - and rksv module must be preset
+            if ((status.newValue.status === "connected") && (status.newValue.drivers.rksv)) {
+                self.statuses.posbox = true;
+            } else {
+                self.statuses.posbox = false;
+            }
+            // Check RKSV Status
+            if (status.newValue.status === 'connected' && (!(self.pos.config.state === "failure"  || self.pos.config.state === "inactive"))) {
+                var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
+                // Connected or setup are ok - setup means we are connected - but we need some additional love...
+                if ((rksvstatus === 'connected') || (rksvstatus === 'setup')) {
+                    self.statuses.rksv = true;
+                } else {
+                    self.statuses.rksv = false;
+                }
+            } else {
+                self.statuses.rksv = false;
+            }
+            // Extra check here for a valid cashregisterid
+            if ((!self.pos.config.cashregisterid) || (self.pos.config.cashregisterid.trim() === "")) {
+                self.statuses.rksv = false;
+            }
+            // Check for month product
+            if ((self.statuses['rksv_products_exists']===false)
+                && (self.pos.config.start_product_id) && (self.pos.db.get_product_by_id(self.pos.config.start_product_id[0]))
+                && (self.pos.config.month_product_id) && (self.pos.db.get_product_by_id(self.pos.config.month_product_id[0]))
+                && (self.pos.config.null_product_id) && (self.pos.db.get_product_by_id(self.pos.config.null_product_id[0]))
+                && (self.pos.config.year_product_id) && (self.pos.db.get_product_by_id(self.pos.config.year_product_id[0]))) {
+                self.statuses['rksv_products_exists'] = true;
+            }
+            // Check status reponse from proxy - which signatures does the proxy has available ?
+            if ((status.newValue.drivers.rksv) && (status.newValue.drivers.rksv.cards)) {
+                // Do create Backbone Signature Models out of this
+                var signatures = new Array();
+                var currentSignature = self.pos.get('signature');
+                $.each(status.newValue.drivers.rksv.cards, function(serial, signature) {
+                    var newSignature = new models.Signature(signature.cardinfo, {
+                        pos: self.pos
+                    });
+                    signatures.push(newSignature);
+                    // Check if this is an active signature - forward status if it is
+                    if ((currentSignature) && (currentSignature.get('serial') == newSignature.get('serial'))) {
+                        currentSignature.set({
+                            'bmf_last_status': signature.cardinfo['bmf_last_status']
+                        })
                     }
                 });
+                self.pos.signatures.set(signatures);
+            }
+            // Here do check for the start receipt flag - if it is set - then generate the start receipt for this cash register !
+            if ((self.start_receipt_in_progress === false) &&
+                (self.all_ok()) &&
+                (status.newValue.drivers.rksv) &&
+                (status.newValue.drivers.rksv.start_receipt_needed !== undefined) &&
+                (status.newValue.drivers.rksv.start_receipt_needed === true)) {
+                self.create_start_receipt(statusWidget);
+            }
+            if ((self.start_receipt_in_progress === false) &&
+                (self.all_ok()) &&
+                (status.newValue.drivers.rksv) &&
+                (status.newValue.drivers.rksv.start_receipt_needed !== undefined) &&
+                (status.newValue.drivers.rksv.start_receipt_needed === false) &&
+                (status.newValue.drivers.rksv.has_valid_start_receipt !== undefined) &&
+                (status.newValue.drivers.rksv.has_valid_start_receipt === false)) {
+                self.start_receipt_in_progress = true;
+                self.bmf_register_start_receipt_rpc().then(
+                    function done() {
+                        self.start_receipt_in_progress = false;
+                        Gui.showPopup('RKSVFailureWidget', {
+                            'title': "Erfolg",
+                            'body':  "Startbeleg wurde erfolgreich eingereicht!",
+                        });
+                    },
+                    function failed(message) {
+                        self.start_receipt_in_progress = false;
+                        // Set setup state
+                        self.pos.set('cashbox_mode', 'setup');
+                        // Display error popup for user
+                        Gui.showPopup('RKSVFailureWidget', {
+                            'title': "Fehler",
+                            'body':  message
+                        });
+                    }
+                );
+            }
+            if (
+                (self.all_ok()) &&
+                (status.newValue.drivers.rksv) &&
+                (status.newValue.drivers.rksv.start_receipt_needed !== undefined) &&
+                (status.newValue.drivers.rksv.start_receipt_needed === false)
+            ){
+                // Here do check for the year receipt flag - if it is set - then generate the year receipt for this cash register !
+                if ((self.year_receipt_in_progress === false) &&
+                    (self.all_ok()) &&
+                    (status.newValue.drivers.rksv) &&
+                    (status.newValue.drivers.rksv.year_receipt_needed) &&
+                    (status.newValue.drivers.rksv.year_receipt_needed === true)) {
+                    self.create_year_receipt(statusWidget);
+                }
+                // Here do check for the month receipt flag - if it is set - then generate the month receipt for this cash register !
+                if ((self.month_receipt_in_progress === false) &&
+                    (self.all_ok()) &&
+                    (status.newValue.drivers.rksv) &&
+                    (status.newValue.drivers.rksv.month_receipt_needed) &&
+                    (status.newValue.drivers.rksv.month_receipt_needed === true)) {
+                    self.create_month_receipt(statusWidget);
+                }
             }
         },
         auto_receipt_needed: function() {
@@ -249,8 +248,10 @@ odoo.define('pos_rksv.rksv', function (require) {
                     this.statuses['signatureinheit'] &&
                     this.statuses['rksv'];
         },
-        print_order: function(order) {
-            this.pos.trigger('show-main-screen', 'ReceiptScreen');
+        print_order: function(statusWidget) {
+            var name = 'ReceiptScreen'
+            var props = {forceClose: true};
+            statusWidget.trigger('show-main-screen', {name, props});
         },
         create_dummy_order: function(product_id, reference) {
             // Get current order
@@ -278,7 +279,7 @@ odoo.define('pos_rksv.rksv', function (require) {
             // return it
             return order;
         },
-        create_start_receipt: function() {
+        create_start_receipt: function(statusWidget) {
             var self = this;
             this.pos.trigger('show-main-screen', 'ProductScreen');
             this.start_receipt_in_progress = true;
@@ -289,7 +290,7 @@ odoo.define('pos_rksv.rksv', function (require) {
             // Sign Order
             this.pos.push_single_order(order).then(
                 function done() {
-                    self.print_order(order);
+                    self.print_order(statusWidget);
                     self.start_receipt_in_progress = false;
                 },
                 function failed() {
@@ -298,7 +299,7 @@ odoo.define('pos_rksv.rksv', function (require) {
                 }
             );
         },
-        create_year_receipt: function() {
+        create_year_receipt: function(statusWidget) {
             var self = this;
             if ((self.pos.get_order()) && (self.pos.get_order().start_receipt)) {
                 self.pos.get_order().finalize();
@@ -316,7 +317,7 @@ odoo.define('pos_rksv.rksv', function (require) {
             // Sign Order
             this.pos.push_single_order(order).then(
                 function done() {
-                    self.print_order(order);
+                    self.print_order(statusWidget);
                     self.year_receipt_in_progress = false;
                 },
                 function failed() {
@@ -325,7 +326,7 @@ odoo.define('pos_rksv.rksv', function (require) {
                 }
             );
         },
-        create_month_receipt: function() {
+        create_month_receipt: function(statusWidget) {
             var self = this;
             if ((self.pos.get_order()) && (self.pos.get_order().year_receipt)) {
                 self.pos.get_order().finalize();
@@ -337,15 +338,14 @@ odoo.define('pos_rksv.rksv', function (require) {
             this.month_receipt_in_progress = true;
             // Create a new order
             var year_month = moment().subtract(1, 'month').format('YYYY-MM');
-            //new Date().getFullYear() + "-" + ((new Date().getMonth()) + 1);
-            // Create a new dummy order with the start product
+            // Create a new dummy order with the month product
             var order = this.create_dummy_order(this.pos.config.month_product_id[0], year_month);
             // Mark it as month receipt order type
             order.month_receipt = true;
             // Sign Order
             this.pos.push_single_order(order).then(
                 function done() {
-                    self.print_order(order);
+                    self.print_order(statusWidget);
                     self.month_receipt_in_progress = false;
                 },
                 function failed() {
