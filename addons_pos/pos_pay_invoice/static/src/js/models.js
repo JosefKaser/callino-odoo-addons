@@ -141,6 +141,8 @@ odoo.define('pos_pay_invoice.models', function (require) {
                 if (options && options.extras && options.extras.invoice) {
                     var orderline = this.get_last_orderline();
                     last_orderline.invoice_id = options.extras.invoice.get('id');
+                    last_orderline.discount = 0;
+                    last_orderline.discountStr = null;
                     this.orderlines.trigger('change', last_orderline)
                 }
                 return;
@@ -150,6 +152,8 @@ odoo.define('pos_pay_invoice.models', function (require) {
             if (options && options.extras && options.extras.invoice) {
                 var last_orderline = this.get_last_orderline();
                 last_orderline.invoice_id = options.extras.invoice.get('id');
+                last_orderline.discount = 0;
+                last_orderline.discountStr = null;
                 this.orderlines.trigger('change', last_orderline)
             }
         },
