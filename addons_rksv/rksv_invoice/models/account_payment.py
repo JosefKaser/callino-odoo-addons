@@ -27,7 +27,7 @@ class AccountPayment(models.Model):
         attachment=True, readonly=True
     )
     receipt_id = fields.Integer(
-        string='Receipt ID', readonly=True
+        string='Receipt ID', readonly=True, default=None,
     )
     typeOfReceipt = fields.Selection(
         selection=[

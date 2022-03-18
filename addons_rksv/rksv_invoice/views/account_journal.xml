@@ -9,8 +9,8 @@
             <field name="inherit_id" ref="account.view_account_journal_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//notebook" position="inside">
-                    <page name="rksv" string="RKSV" attrs="{'invisible': ['|',('type', '!=', 'cash'),('rksv_at','=',False)]}">
-                        <header>
+                    <page name="rksv" string="RKSV" attrs="{'invisible': ['|',('type', '!=', 'cash'),('company_rksv_at','=',False)]}">
+                        <header attrs="{'invisible': ['|',('rksv_at', '!=', True),('type', '!=', 'cash')]}">
                             <button name="update_rksv_status" type="object" string="Update Status"/>
                             <button name="create_rksv_on_posbox" type="object" string="Auf PosBox Registrieren" attrs="{'invisible': [('posbox_registered', '=', True)]}"/>
                             <button name="register_cashbox_bmf" type="object" string="Anmeldung beim BMF" attrs="{'invisible': [('bmf_gemeldet', '=', True)]}"/>
@@ -20,15 +20,20 @@
                             <button name="rksv_write_dep_crypt_container" type="object" string="DEP Dateien erzeugen"/>
                             <field name="rksv_state" widget="statusbar" statusbar_visible=""/>
                         </header>
-                        <field name="rksv_status_text" nolabel="1"/>
+                        <field name="rksv_status_text" nolabel="1" attrs="{'invisible': ['|',('rksv_at', '!=', True),('type', '!=', 'cash')]}"/>
                         <group>
+                            <field name="rksv_at"/>
+                        </group>
+                        <group attrs="{'invisible': ['|',('rksv_at', '!=', True),('type', '!=', 'cash')]}">
                             <group name="rksv_config" string="Konfiguration">
+                                <field name="company_rksv_at" invisible="1"/>
                                 <field name="cashregisterid" attrs="{'required': [('rksv_at', '=', True),('type', '=', 'cash')]}"/>
                                 <field name="signature_provider_id" attrs="{'required': [('rksv_at', '=', True),('type', '=', 'cash')]}"/>
                                 <field name="posbox_registered"/>
+                            </group>
+                            <group name="bmf_status" string="BMF Status">
                                 <field name="bmf_gemeldet"/>
                                 <field name="bmf_test_mode"/>
-                                <field name="rksv_at"/>
                             </group>
                         </group>
                     </page>
