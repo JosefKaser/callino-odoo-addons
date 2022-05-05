@@ -84,7 +84,7 @@ class AccountJournal(models.Model):
                 "kassenidentifikationsnummer": journal.cashregisterid,
                 "atu": journal.company_id.vat,
                 "name": journal.name,
-                "start_nr": "1"
+                "start_nr": 1
             })
             _logger.info("Got Register Cashbox on PosBox Result: %s", result)
             if result['success'] or (not result['success'] and result['message'] == 'KassenID bereits gemeldet !'):
@@ -139,6 +139,15 @@ class AccountJournal(models.Model):
             if not result['success']:
                 journal.rksv_status_text = result['message']
 
+    def set_valid_start_receipt(self):
+        for journal in self.filtered(lambda j: j.rksv_at and j.bmf_gemeldet):
+            box = journal.signature_provider_id.box_id
+            params = self._get_cashregister_params()
+            result = box.query_box("/hw_proxy/valid_start_receipt", params)
+            if not result['success']:
+                journal.rksv_status_text = result['message']
+            journal.check_status()
+
     def rksv_write_dep_crypt_container(self):
         for journal in self.filtered(lambda j: j.rksv_at and j.bmf_gemeldet):
             box = journal.signature_provider_id.box_id
@@ -170,6 +179,7 @@ class AccountJournal(models.Model):
                 })
                 result = box.query_box("/hw_proxy/rksv_order", params)
                 _logger.info("Got Result on create start receipt: %s", result)
+                self._create_dummy_payment(result, "Startbeleg")
                 if result['success']:
                     # Validate start receipt
                     params = self._get_cashregister_params()
@@ -232,6 +242,7 @@ class AccountJournal(models.Model):
                         'rksv_state': 'error',
                     })
                 else:
+                    self._create_dummy_payment(result, "Jahresbeleg")
                     params = self._get_cashregister_params()
                     params.update({
                         'belegnr': result['receipt_id']
@@ -255,6 +266,7 @@ class AccountJournal(models.Model):
                         'rksv_state': 'error',
                     })
                 else:
+                    self._create_dummy_payment(result, "Monatsbeleg")
                     params = self._get_cashregister_params()
                     params.update({
                         'belegnr': result['receipt_id']
@@ -270,6 +282,22 @@ class AccountJournal(models.Model):
                     'rksv_status_text': 'Alles in Ordnung',
                     'rksv_state': 'ready',
                 })
+
+    def _create_dummy_payment(self, result, name):
+        # Create a dummy payment here with the result
+        payment_data = result.copy()
+        self._rework_posbox_result(payment_data)
+        payment_data.update({
+            'name': name,
+            'payment_type': 'inbound',
+            'partner_type': 'customer',
+            'partner_id': self.company_id.partner_id.id,
+            'payment_method_id': self.env.ref('account.account_payment_method_manual_in').id,
+            'amount': 0.00,
+            'journal_id': self.id,
+        })
+        payment = self.env['account.payment'].with_context(disable_rksv=True).create(payment_data)
+        payment.post()
 
     def register_payment(self, payment):
         self.ensure_one()
@@ -296,20 +324,23 @@ class AccountJournal(models.Model):
                     'rksv_state': 'error',
                 })
             else:
-                del result['success']
-                map = {
-                    'qrcodeValue': 'qr_code_value',
-                    'qrcodeImage': 'qr_code_image',
-                    'ocrcodeValue': 'ocr_code_value',
-                }
-                for key in map.keys():
-                    result[map[key]] = result[key]
-                    del result[key]
-                serial = int(result['signatureSerial'], 16)
-                provider = self.env['signature.provider'].search([
-                    ('serial', '=', serial),
-                ], limit=1)
-                result['provider_id'] = provider.id
-                result['qr_code_image'] = result['qr_code_image'][22:]
-                self.signature_provider_id = provider.id
+                self._rework_posbox_result(result)
+                self.signature_provider_id = result['provider_id']
                 return result
+
+    def _rework_posbox_result(self, result):
+        del result['success']
+        map = {
+            'qrcodeValue': 'qr_code_value',
+            'qrcodeImage': 'qr_code_image',
+            'ocrcodeValue': 'ocr_code_value',
+        }
+        for key in map.keys():
+            result[map[key]] = result[key]
+            del result[key]
+        serial = int(result['signatureSerial'], 16)
+        provider = self.env['signature.provider'].search([
+            ('serial', '=', serial),
+        ], limit=1)
+        result['provider_id'] = provider.id
+        result['qr_code_image'] = result['qr_code_image'][22:]

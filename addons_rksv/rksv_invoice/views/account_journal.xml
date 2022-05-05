@@ -15,6 +15,7 @@
                             <button name="create_rksv_on_posbox" type="object" string="Auf PosBox Registrieren" attrs="{'invisible': [('posbox_registered', '=', True)]}"/>
                             <button name="register_cashbox_bmf" type="object" string="Anmeldung beim BMF" attrs="{'invisible': [('bmf_gemeldet', '=', True)]}"/>
                             <button name="set_sprovider_posbox" type="object" string="Signature Provider setzen"/>
+                            <button name="set_valid_start_receipt" type="object" string="Startbeleg Valide setzen" groups="base.group_no_one"/>
                             <button name="check_status" type="object" string="Integritätsprüfung"/>
                             <button name="delete_start_receipt" type="object" string="Startbeleg löschen" groups="base.group_no_one"/>
                             <button name="rksv_write_dep_crypt_container" type="object" string="DEP Dateien erzeugen"/>
