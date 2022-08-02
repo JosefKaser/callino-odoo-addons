@@ -277,7 +277,7 @@ class AccountJournal(models.Model):
                             'rksv_status_text': result['message'],
                             'rksv_state': 'error',
                         })
-            elif result['rksv']['cashbox_mode'] == 'active':
+            else:
                 journal.update({
                     'rksv_status_text': 'Alles in Ordnung',
                     'rksv_state': 'ready',
