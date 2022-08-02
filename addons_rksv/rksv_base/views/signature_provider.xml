@@ -7,6 +7,7 @@
             <field name="arch" type="xml">
                 <form string="Signature Provider">
                     <header>
+                        <button type="object" name="register_signatureinheit" string="Beim BMF anmelden"/>
                         <field name="bmf_last_status" widget="statusbar" nolabel="1" />
                     </header>
                     <sheet>
