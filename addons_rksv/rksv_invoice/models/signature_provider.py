@@ -45,8 +45,9 @@ class SignatureProvider(models.Model):
             _logger.info("Got Result on status: %s", result)
             if result['success']:
                 signature.update({
-                    'bmf_message': result['status']['status'],
-                    'bmf_last_status': result['status']['ts_status'],
+                    'bmf_message': result['message'],
+                    'bmf_last_status': result['status']['status'],
+                    'bmf_last_update': result['status']['ts_status'],
                 })
             _logger.info("Got Result: %s", result)
 
