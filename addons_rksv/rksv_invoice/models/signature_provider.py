@@ -42,6 +42,7 @@ class SignatureProvider(models.Model):
             box = signature.box_id
             params = signature._get_signature_params()
             result = box.query_box("/hw_proxy/status_signatureinheit", params)
+            _logger.info("Got Result on status: %s", result)
             if result['success']:
                 signature.update({
                     'bmf_message': result['status']['status'],
@@ -57,6 +58,7 @@ class SignatureProvider(models.Model):
                 'kundeninfo': signature.name,
             })
             result = box.query_box("/hw_proxy/rksv_signatureinheit_registrieren", params)
+            _logger.info("Got Result on register: %s", result)
             if result['success']:
                 signature.update({
                     'bmf_message': result['status']['status'],
