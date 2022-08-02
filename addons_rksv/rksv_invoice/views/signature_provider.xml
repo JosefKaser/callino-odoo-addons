@@ -8,6 +8,7 @@
             <field name="inherit_id" ref="rksv_base.view_signature_provider_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//header" position="inside">
+                    <button type="object" name="register_signatureinheit" string="Beim BMF anmelden"/>
                     <button name="status_signatureinheit" type="object" string="Status Abfragen"/>
                 </xpath>
 
