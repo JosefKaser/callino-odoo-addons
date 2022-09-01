@@ -14,6 +14,7 @@ openerp.pos_product_reference = function(instance) {
             // Extend fields of product.template
             product = this.pos_find_model('product.product');
             product.fields.push('product_ref');
+            product.fields.push('product_ref_textarea');
         },
         pos_find_model: function (model_name) {
             var self = this;
@@ -69,9 +70,16 @@ openerp.pos_product_reference = function(instance) {
         render_orderline: function(orderline){
             var el_node = this._super(orderline);
             var input_ref = $(el_node).find('li input');
-            if (input_ref.length > 0)
-                $(el_node).find('input')[0].addEventListener('keyup',this.line_keyup_handler);
-
+            var input_area = $(el_node).find('li textarea');
+            if (input_ref.length > 0) {
+                $(el_node).find('input')[0].addEventListener('keyup', this.line_keyup_handler);
+            }
+            if (input_area.length > 0) {
+                $(el_node).find('textarea')[0].addEventListener('keyup', this.line_keyup_handler);
+                $(el_node).find('textarea').on('keypress', function(e) {
+                    e.stopPropagation();
+                });
+            }
             orderline.node = el_node;
             return el_node;
         }
