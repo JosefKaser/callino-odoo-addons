@@ -38,11 +38,11 @@
     <t t-extend="XmlReceipt">
         <t t-jquery="t[t-foreach*='receipt.orderlines']" t-operation="append">
             <t t-if="line.product_ref_text">
-                <line>
-                    <left>
-                        Ref.: <t t-esc="line.product_ref_text"/>
-                    </left>
-                </line>
+                <t t-foreach="line.product_ref_text_split" t-as="product_ref_fragment">
+                    <line>
+                        <left><t t-esc='product_ref_fragment' /></left>
+                    </line>
+                </t>
             </t>
         </t>
     </t>

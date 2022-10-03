@@ -46,11 +46,18 @@ openerp.pos_product_reference = function(instance) {
         export_as_JSON: function(){
             var data = OrderlineSuper.prototype.export_as_JSON.call(this);
             data.product_ref_text = this.get_product_reference();
+            if (data.product_ref_text) {
+                data.product_ref_text_split = data.product_ref_text.replace(/.{20}\S*\s+/g, "$&@").split('\n')
+            }
             return data;
         },
        export_for_printing : function() {
             var data = OrderlineSuper.prototype.export_for_printing.call(this);
-            data.product_ref_text = this.get_product_reference();
+            data.product_ref_text = 'Ref.: ' + this.get_product_reference();
+            data.product_ref_text_split = '';
+            if (this.get_product_reference()) {
+                data.product_ref_text_split = data.product_ref_text.replace(/.{20}\S*\s+/g, "$&@").split('\n')
+            }
             return data;
         }
     });
