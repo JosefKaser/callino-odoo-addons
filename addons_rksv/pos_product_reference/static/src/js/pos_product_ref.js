@@ -56,11 +56,7 @@ openerp.pos_product_reference = function(instance) {
             data.product_ref_text = 'Ref.: ' + this.get_product_reference();
             data.product_ref_text_split = '';
             if (this.get_product_reference()) {
-                if (data.product_ref_text.includes('\n')) {
-                    data.product_ref_text_split = data.product_ref_text.replace(/.{20}\S*\s+/g, "$&@").split('\n')
-                } else {
-                    data.product_ref_text_split = data.product_ref_text.match(/\S.{1,20}(?=\s|$)/g)
-                }
+                data.product_ref_text_split = data.product_ref_text.match(/\S.{1,16}(?=\s|$)/g)
             }
             return data;
         }
