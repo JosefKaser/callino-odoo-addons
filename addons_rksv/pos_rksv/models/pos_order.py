@@ -90,6 +90,8 @@ class POSOrder(models.Model):
         string="Summenspeicher",
         readonly=True
     )
+    jws_dummy = fields.Boolean(string="JWS Sync Dummy Eintrag", default=False)
+    jws_dummy_ok = fields.Boolean(string="JWS Sync Dummy Eintrag geprüft", default=False)
 
     @api.depends('signatureSerial')
     def _compute_provider(self):

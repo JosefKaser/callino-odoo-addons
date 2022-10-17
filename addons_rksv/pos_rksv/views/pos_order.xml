@@ -44,6 +44,12 @@
                                 <field name="signedJWSCompactRep" style="overflow-wrap: break-word; word-wrap: break-word; -ms-word-break: break-all; word-break: break-word;"/>
                             </group>
                         </group>
+                        <group>
+                            <group>
+                                <field name="jws_dummy" invisible="1"/>
+                                <field name="jws_dummy_ok" attrs="{'invisible': [('jws_dummy', '=', False)]}"/>
+                            </group>
+                        </group>
                     </page>
                 </xpath>
             </field>

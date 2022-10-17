@@ -121,6 +121,20 @@
             <field name="default_code">RKSV007</field>
             <field name="rksv_product_type">product</field>
         </record>
+        <record id="rksv_umsatz_19_receipt" model="product.product">
+            <field name="name">Umsätze zu 19%</field>
+            <field name="categ_id" ref="product_category_rksv"/>
+            <field name="standard_price" eval="0.0"/>
+            <field name="list_price" eval="0.0"/>
+            <field name="type">service</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+            <field name="description">Produkt für Umsätze zu 19%</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="default_code">RKSV009</field>
+            <field name="rksv_product_type">product</field>
+        </record>
         <record id="rksv_invoice_receipt" model="product.product">
             <field name="name">Rechnung</field>
             <field name="categ_id" ref="product_category_rksv"/>
