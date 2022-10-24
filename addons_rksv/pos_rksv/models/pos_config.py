@@ -155,97 +155,96 @@ class POSConfig(models.Model):
                 ], limit=1)
                 if order and order.signedJWSCompactRep and order.signedJWSCompactRep in jws_value:
                     order.signedJWSCompactRep = jws_value
-
+                    continue
+                if self.jws_sync_dummy_creation:
+                    payload = base64.b64decode(jws_value.split('.')[1]).decode('utf-8').split('_')
+                    rka = payload[1]
+                    cashregister = payload[2]
+                    belnr = payload[3]
+                    pldate = payload[4]
+                    val_20 = payload[5].replace(",", ".")
+                    val_10 = payload[6].replace(",", ".")
+                    val_13 = payload[7].replace(",", ".")
+                    val_0 = payload[8].replace(",", ".")
+                    val_19 = payload[9].replace(",", ".")
+                    coded_turnover = payload[10]
+                    cert_serial = payload[11]
+                    prev_sig = payload[12]
+                    values = {
+                        'jws_dummy': True,
+                        'jws_dummy_ok': False,
+                        'date_order': datetime.strptime(pldate, "%Y-%m-%dT%H:%M:%S"),
+                        'config_id': self.id,
+                        'signatureSerial': signatureSerial,
+                        'receipt_id': receipt_id,
+                        'session_id': self.env['pos.session'].search([('id', 'in', self.session_ids.ids), ('state', '=', 'opened')]).id,
+                        'encryptedTurnOverValue': coded_turnover,
+                        'chainValue': prev_sig,
+                        'signedJWSCompactRep': jws_value,
+                        'amount_tax': (float(val_20) * 0.2) + (float(val_10) * 0.1) + (float(val_13) * 0.13) + (float(val_0) * 0) + (float(val_19) * 0.19),
+                        'amount_total': (float(val_20)) + (float(val_10)) + (float(val_13)) + (float(val_0)) + (float(val_19)),
+                        'amount_paid': 0.0,
+                        'amount_return': 0.0,
+                        'typeOfReceipt': 'STANDARD_BELEG',
+                        'lines': [],
+                    }
+                    if float(val_20) > 0.0:
+                        values['lines'].append((0, 0, {
+                            'name': "Umsätze 20%",
+                            'product_id': self.env.ref('rksv_base.rksv_umsatz_20_receipt').id,
+                            'price_unit': float(val_20) * 0.8,
+                            'price_subtotal': float(val_20) * 0.8,
+                            'price_subtotal_incl': float(val_20),
+                            'qty': 1,
+                            'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_20_receipt').taxes_id.ids)]
+                        }))
+                    if float(val_10) > 0.0:
+                        values['lines'].append((0, 0, {
+                            'name': "Umsätze 10%",
+                            'product_id': self.env.ref('rksv_base.rksv_umsatz_10_receipt').id,
+                            'price_unit': float(val_10) * 0.9,
+                            'price_subtotal': float(val_10) * 0.9,
+                            'price_subtotal_incl': float(val_10),
+                            'qty': 1,
+                            'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_10_receipt').taxes_id.ids)]
+                        }))
+                    if float(val_13) > 0.0:
+                        values['lines'].append((0, 0, {
+                            'name': "Umsätze 13%",
+                            'product_id': self.env.ref('rksv_base.rksv_umsatz_13_receipt').id,
+                            'price_unit': float(val_13) * 0.87,
+                            'price_subtotal': float(val_13) * 0.87,
+                            'price_subtotal_incl': float(val_13),
+                            'qty': 1,
+                            'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_13_receipt').taxes_id.ids)]
+                        }))
+                    if float(val_0) > 0.0:
+                        values['lines'].append((0, 0, {
+                            'name': "Umsätze 0%",
+                            'product_id': self.env.ref('rksv_base.rksv_umsatz_0_receipt').id,
+                            'price_unit': float(val_0),
+                            'price_subtotal': float(val_0),
+                            'price_subtotal_incl': float(val_0),
+                            'qty': 1,
+                            'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_0_receipt').taxes_id.ids)]
+                        }))
+                    if float(val_19) > 0.0:
+                        values['lines'].append((0, 0, {
+                            'name': "Umsätze 19%",
+                            'product_id': self.env.ref('rksv_base.rksv_umsatz_19_receipt').id,
+                            'price_unit': float(val_19) * 0.81,
+                            'price_subtotal': float(val_19) * 0.81,
+                            'price_subtotal_incl': float(val_19),
+                            'qty': 1,
+                            'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_19_receipt').taxes_id.ids)]
+                        }))
+                    order = self.env['pos.order'].create(values)
+                    pmp = self.env['pos.make.payment'].with_context(active_id=order.id).create({})
+                    pmp.check()
                 else:
-                    if self.jws_sync_dummy_creation:
-                        payload = base64.b64decode(jws_value.split('.')[1]).decode('utf-8').split('_')
-                        rka = payload[1]
-                        cashregister = payload[2]
-                        belnr = payload[3]
-                        pldate = payload[4]
-                        val_20 = payload[5].replace(",", ".")
-                        val_10 = payload[6].replace(",", ".")
-                        val_13 = payload[7].replace(",", ".")
-                        val_0 = payload[8].replace(",", ".")
-                        val_19 = payload[9].replace(",", ".")
-                        coded_turnover = payload[10]
-                        cert_serial = payload[11]
-                        prev_sig = payload[12]
-                        values = {
-                            'jws_dummy': True,
-                            'jws_dummy_ok': False,
-                            'date_order': datetime.strptime(pldate, "%Y-%m-%dT%H:%M:%S"),
-                            'config_id': self.id,
-                            'signatureSerial': signatureSerial,
-                            'receipt_id': receipt_id,
-                            'session_id': self.env['pos.session'].search([('id', 'in', self.session_ids.ids), ('state', '=', 'opened')]).id,
-                            'encryptedTurnOverValue': coded_turnover,
-                            'chainValue': prev_sig,
-                            'signedJWSCompactRep': jws_value,
-                            'amount_tax': (float(val_20) * 0.2) + (float(val_10) * 0.1) + (float(val_13) * 0.13) + (float(val_0) * 0) + (float(val_19) * 0.19),
-                            'amount_total': (float(val_20)) + (float(val_10)) + (float(val_13)) + (float(val_0)) + (float(val_19)),
-                            'amount_paid': 0.0,
-                            'amount_return': 0.0,
-                            'typeOfReceipt': 'STANDARD_BELEG',
-                            'lines': [],
-                        }
-                        if float(val_20) > 0.0:
-                            values['lines'].append((0, 0, {
-                                'name': "Umsätze 20%",
-                                'product_id': self.env.ref('rksv_base.rksv_umsatz_20_receipt').id,
-                                'price_unit': float(val_20) * 0.8,
-                                'price_subtotal': float(val_20) * 0.8,
-                                'price_subtotal_incl': float(val_20),
-                                'qty': 1,
-                                'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_20_receipt').taxes_id.ids)]
-                            }))
-                        if float(val_10) > 0.0:
-                            values['lines'].append((0, 0, {
-                                'name': "Umsätze 10%",
-                                'product_id': self.env.ref('rksv_base.rksv_umsatz_10_receipt').id,
-                                'price_unit': float(val_10) * 0.9,
-                                'price_subtotal': float(val_10) * 0.9,
-                                'price_subtotal_incl': float(val_10),
-                                'qty': 1,
-                                'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_10_receipt').taxes_id.ids)]
-                            }))
-                        if float(val_13) > 0.0:
-                            values['lines'].append((0, 0, {
-                                'name': "Umsätze 13%",
-                                'product_id': self.env.ref('rksv_base.rksv_umsatz_13_receipt').id,
-                                'price_unit': float(val_13) * 0.87,
-                                'price_subtotal': float(val_13) * 0.87,
-                                'price_subtotal_incl': float(val_13),
-                                'qty': 1,
-                                'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_13_receipt').taxes_id.ids)]
-                            }))
-                        if float(val_0) > 0.0:
-                            values['lines'].append((0, 0, {
-                                'name': "Umsätze 0%",
-                                'product_id': self.env.ref('rksv_base.rksv_umsatz_0_receipt').id,
-                                'price_unit': float(val_0),
-                                'price_subtotal': float(val_0),
-                                'price_subtotal_incl': float(val_0),
-                                'qty': 1,
-                                'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_0_receipt').taxes_id.ids)]
-                            }))
-                        if float(val_19) > 0.0:
-                            values['lines'].append((0, 0, {
-                                'name': "Umsätze 19%",
-                                'product_id': self.env.ref('rksv_base.rksv_umsatz_19_receipt').id,
-                                'price_unit': float(val_19) * 0.81,
-                                'price_subtotal': float(val_19) * 0.81,
-                                'price_subtotal_incl': float(val_19),
-                                'qty': 1,
-                                'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_19_receipt').taxes_id.ids)]
-                            }))
-                        order = self.env['pos.order'].create(values)
-                        pmp = self.env['pos.make.payment'].with_context(active_id=order.id).create({})
-                        pmp.check()
-                    else:
-                        success = False
-                        message = 'JWS could not be synced! Inconsistency predicted.'
-                        _logger.error('JWS could not be synced! Inconsistency predicted.')
+                    success = False
+                    message = 'JWS could not be synced! Inconsistency predicted.'
+                    _logger.error('JWS could not be synced! Inconsistency predicted.')
         return {
             'success': success,
             'message': message
