@@ -174,9 +174,8 @@ class POSConfig(models.Model):
             'encryptedTurnOverValue': payload_values['coded_turnover'],
             'chainValue': payload_values['prev_sig'],
             'signedJWSCompactRep': jws_value,
-            'amount_tax': (float(payload_values['val_20']) * (20 / 100)) + (float(payload_values['val_10']) * (10 / 100)) + (float(payload_values['val_13']) * (13 / 100)) + (
-                    float(payload_values['val_0'])) + (float(payload_values['val_19']) * (19 / 100)),
-            'amount_total': (float(payload_values['val_20'])) + (float(payload_values['val_10'])) + (float(payload_values['val_13'])) + (float(payload_values['val_0'])) + (float(payload_values['val_19'])),
+            'amount_tax': 0.0,
+            'amount_total': 0.0,
             'amount_paid': 0.0,
             'amount_return': 0.0,
             'typeOfReceipt': 'STANDARD_BELEG',
@@ -185,13 +184,18 @@ class POSConfig(models.Model):
         return values
 
     def get_line_values(self, val, tax):
-        return (0, 0, {
+        if len(self.env.ref('rksv_base.rksv_umsatz_%i_receipt' % tax).taxes_id) != 1:
+            # multiple tax ids on product are invalid
+            raise UserError("Erstellung via JWS Sync ist nur mit einer Steuer im Produkt %s möglich" % self.env.ref('rksv_base.rksv_umsatz_%i_receipt' % tax).name)
+        taxes_id = self.env.ref('rksv_base.rksv_umsatz_%i_receipt' % tax).taxes_id[0]
+        taxes = taxes_id.with_context(force_price_include=True).compute_all(float(val))
+        return taxes, (0, 0, {
             'full_product_name': "Umsätze %i%%" % tax,
             'name': "Umsätze %i%%" % tax,
             'product_id': self.env.ref('rksv_base.rksv_umsatz_%i_receipt' % tax).id,
-            'price_unit': float(val) / (1 + (tax / 100)),
-            'price_subtotal': float(val) / (1 + (tax / 100)),
-            'price_subtotal_incl': float(val),
+            'price_unit': taxes['total_excluded'],
+            'price_subtotal': taxes['total_excluded'],
+            'price_subtotal_incl': taxes['total_included'],
             'qty': 1,
             'tax_ids': [(6, 0, self.env.ref('rksv_base.rksv_umsatz_%i_receipt' % tax).taxes_id.ids)]
         })
@@ -225,20 +229,30 @@ class POSConfig(models.Model):
                     values = self.get_order_values_from_payload(signatureSerial, receipt_id, jws_value, payload_values)
                     # depending on the values of the payload we add one or more order lines corresponding to the uses tax
                     if float(payload_values['val_20']) > 0.0:
-                        line_values = self.get_line_values(payload_values['val_20'], 20)
+                        taxes, line_values = self.get_line_values(payload_values['val_20'], 20)
                         values['lines'].append(line_values)
+                        values['amount_total'] += float(payload_values['val_20'])
+                        values['amount_tax'] += taxes['taxes'][0]['amount']
                     if float(payload_values['val_10']) > 0.0:
-                        line_values = self.get_line_values(payload_values['val_10'], 10)
+                        taxes, line_values = self.get_line_values(payload_values['val_10'], 10)
                         values['lines'].append(line_values)
+                        values['amount_total'] += float(payload_values['val_10'])
+                        values['amount_tax'] += taxes['taxes'][0]['amount']
                     if float(payload_values['val_13']) > 0.0:
-                        line_values = self.get_line_values(payload_values['val_13'], 13)
+                        taxes, line_values = self.get_line_values(payload_values['val_13'], 13)
                         values['lines'].append(line_values)
+                        values['amount_total'] += float(payload_values['val_13'])
+                        values['amount_tax'] += taxes['taxes'][0]['amount']
                     if float(payload_values['val_0']) > 0.0:
-                        line_values = self.get_line_values(payload_values['val_0'], 0)
+                        taxes, line_values = self.get_line_values(payload_values['val_0'], 0)
                         values['lines'].append(line_values)
+                        values['amount_total'] += float(payload_values['val_0'])
+                        values['amount_tax'] += taxes['taxes'][0]['amount']
                     if float(payload_values['val_19']) > 0.0:
-                        line_values = self.get_line_values(payload_values['val_19'], 19)
+                        taxes, line_values = self.get_line_values(payload_values['val_19'], 19)
                         values['lines'].append(line_values)
+                        values['amount_total'] += float(payload_values['val_19'])
+                        values['amount_tax'] += taxes['taxes'][0]['amount']
                     # create the missing order
                     order = self.env['pos.order'].create(values)
                     if order.amount_total == 0.0:
