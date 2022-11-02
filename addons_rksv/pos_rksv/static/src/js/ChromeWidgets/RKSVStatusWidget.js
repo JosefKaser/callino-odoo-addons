@@ -42,7 +42,7 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
         _set_smart_status(status) {
             var self = this;
             var mode = self.env.pos.get('cashbox_mode');
-            if (status.status === 'connected' && (!(self.env.pos.config.state === "setup" || self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
+            if (status.status === 'connected' && (!(self.env.pos.config.state === "setup" || self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive")) && status.drivers.rksv) {
                 var rksvstatus = status.drivers.rksv ? status.drivers.rksv.status : false;
                 var cashbox_mode = status.drivers.rksv.cashbox_mode;
                 if (cashbox_mode !== 'active') {

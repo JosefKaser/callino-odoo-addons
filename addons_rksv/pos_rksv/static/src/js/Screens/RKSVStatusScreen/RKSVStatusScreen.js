@@ -317,7 +317,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                     self.state.posbox_message = 'PosBox getrennt (' + status.newValue.status + ')';
                 }
                 // Check if we have to activate ourself
-                if (status.newValue.status === 'connected' && (!(self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
+                if (status.newValue.status === 'connected' && (!(self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive")) && (status.newValue.drivers.rksv)) {
                     var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
                     self.state.cashbox_mode = status.newValue.drivers.rksv.cashbox_mode;
                     self.env.pos.set('cashbox_mode', status.newValue.drivers.rksv.cashbox_mode);
@@ -337,6 +337,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                         // Validation of start receipt failed - activate the try again button
                         self.state.rksv_status_color = 'orange';
                         self.state.button_register_startreceipt = true;
+                        self.state.button_start_receipt_set_valid = true;
                         self.state.button_register_cashbox = false;
                         rksvmessage = "Validierungsfehler!";
                     } else if (rksvstatus == 'failure') {

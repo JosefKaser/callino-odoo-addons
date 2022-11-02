@@ -46,7 +46,7 @@
                         <button class="register_startreceipt revalidate_startreceipt" t-if="state.button_register_startreceipt &amp;&amp; state.button_revalidate_startreceipt">-> Startbeleg prüfen</button>
                         <button class="register_startreceipt delete_startreceipt" t-if="state.button_register_startreceipt &amp;&amp; state.button_delete_startreceipt">-> Startbeleg löschen</button>
                         <button class="register_startreceipt export_crypt" t-if="state.button_register_startreceipt &amp;&amp; state.button_export_crypt">-> Crypt Export</button>
-                        <button class="register_startreceipt start_receipt_set_valid" t-if="state.button_register_startreceipt &amp;&amp; state.button_start_receipt_set_valid">-> Gültigkeit des Startbelegs erzwingen</button>
+                        <button class="register_startreceipt start_receipt_set_valid" t-on-click="start_receipt_set_valid" t-if="state.button_register_startreceipt &amp;&amp; state.button_start_receipt_set_valid">-> Gültigkeit des Startbelegs erzwingen</button>
                     </div>
                     <div class="cashbox-status-indicator clearfix">
                         <div class="indicator" t-attf-style="background:{{ state.cashbox_color }}"/>

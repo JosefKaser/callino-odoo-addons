@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="pos_rksv.pos_config_view_form" model="ir.ui.view">
+            <field name="priority">20</field>
+        </record>
+
+    </data>
+</odoo>
