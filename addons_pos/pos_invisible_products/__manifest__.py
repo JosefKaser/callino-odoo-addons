@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'POS Invisible Products',
-    'version': '14.0.1.0',
+    'version': '15.0.1.0',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Products can be set invisible while still be loaded to POS properly.',
