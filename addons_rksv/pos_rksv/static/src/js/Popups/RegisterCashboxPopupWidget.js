@@ -1,7 +1,9 @@
 odoo.define('pos_rksv.RegisterCashboxPopupWidget', function (require) {
     "use strict";
 
-    const { useState, useRef } = owl.hooks;
+    const { useState } = owl;
+    const { useRef } = owl;
+    const { useListener } = require("@web/core/utils/hooks");
     const RKSVPopupWidget = require('pos_rksv.RKSVPopupWidget');
     const Registries = require('point_of_sale.Registries');
 
@@ -40,7 +42,7 @@ odoo.define('pos_rksv.RegisterCashboxPopupWidget', function (require) {
                         pos.rksv.update_bmf_rk_status();
                     } else {
                         self.state.success = response.message;
-                        pos.set('cashbox_mode', 'active');
+                        self.env.provy.set('cashbox_mode', 'active');
                         // Request a status update here
                         pos.rksv.update_bmf_rk_status();
                     }
@@ -54,11 +56,11 @@ odoo.define('pos_rksv.RegisterCashboxPopupWidget', function (require) {
         }
     }
     RegisterCashboxPopupWidget.template = 'RegisterCashboxPopupWidget';
-    RegisterCashboxPopupWidget.defaultProps = {
+    /*RegisterCashboxPopupWidget.defaultProps = {
         title: 'Kasse mit PosBox verknüpfen',
         exec_button_title: 'Verknüpfen',
         kundeninfo: '',
-    };
+    };*/
     Registries.Component.add(RegisterCashboxPopupWidget);
 
     return RegisterCashboxPopupWidget;

@@ -4,57 +4,75 @@ odoo.define('pos_rksv.RKSVSignatureProvider', function(require) {
     const PosComponent = require('point_of_sale.PosComponent');
     const Registries = require('point_of_sale.Registries');
     const { Gui } = require('point_of_sale.Gui');
-    const { useState } = owl;
+    const { useListener, useBus } = require("@web/core/utils/hooks");
+    const { onMounted, onWillUnmount, useState } = owl;
 
     class RKSVSignatureProvider extends PosComponent {
-        constructor() {
-            super(...arguments);
+        setup() {
+            super.setup();
             var self = this;
             this.state = useState({
                 color: 'red',
                 message: 'Unbekannter Status',
                 cashbox_mode: 'setup',
                 bmf_last_status: 'UNKNOWN',
-                signature: arguments[1].signature,
-                serial: arguments[1].signature.get('serial'),
+                signature: this.props.signature,
+                serial: this.props.signature.serial,
             });
-            this.env.pos.signatures.bind('change:bmf_status change:bmf_message change:bmf_last_status', function(signature) {
+            useListener('change:bmf_status change:bmf_message change:bmf_last_status', function(signature) {
                 self.set_signature_state(signature);
+            });
+            onMounted(() => {
+                this.set_signature_state(this.state.signature);
+                var sig = this.state.signature;
+                var signature = null;
+                $(this.env.pos.signatures).each(function(id, sprov) {
+                    if (sprov.serial == sig.serial) {
+                        signature = sprov;
+                    }
+                });
+                if (typeof signature.try_refresh_status === 'function'){
+                    signature.try_refresh_status(this.env.pos);
+                }
             });
         }
         set_signature_state(signature) {
             var self = this;
-            if (!signature.isActive(self.env.pos)) {
+            var sig = this.props.signature;
+
+            if (signature && (typeof signature.isActive === 'function') && !signature.isActive(self.env.pos)) {
                 // Ignore this update if it does not belong to the active signature
                 return;
             }
             var color = 'red';
-            var cashbox_mode = self.env.pos.get('cashbox_mode');
-            self.state.cashbox_mode = self.env.pos.get('cashbox_mode');
-            var message = signature.get('bmf_last_status')+ ', ' + (signature.get('bmf_message')?signature.get('bmf_message'):'');
-            if ((signature.get('bmf_status')) && signature.get('bmf_last_status') === 'IN_BETRIEB' && (cashbox_mode === 'active' || cashbox_mode === 'setup')) {
+            var cashbox_mode = self.env.proxy.get('cashbox_mode');
+            self.state.cashbox_mode = self.env.proxy.get('cashbox_mode');
+            var message = self.env.proxy.get('bmf_last_status')+ ', ' + (self.env.proxy.get('bmf_message')?self.env.proxy.get('bmf_message'):'');
+            if ((signature.bmf_status) && signature.bmf_last_status === 'IN_BETRIEB' && (cashbox_mode === 'active' || cashbox_mode === 'setup')) {
                 color = 'green';
                 message = 'Signatureinheit registriert und aktiv';
-            } else if (signature.get('bmf_last_status') === 'AUSFALL') {
-                message = signature.get('bmf_last_status')+ ', ' + (signature.get('bmf_message')?signature.get('bmf_message'):'');
+            } else if (signature.bmf_last_status === 'AUSFALL') {
+                message = signature.bmf_last_status + ', ' + (signature.bmf_message?ssignature.bmf_message:'');
             }
             self.state.message = message;
             self.state.color = color;
         }
         get valid_vat() {
-            var signature = this.props.signature;
-            if (signature.matchVAT(this.env.pos.company.bmf_vat_number)) {
+            var sig = this.props.signature;
+            var signature = null;
+            $(this.env.pos.signatures).each(function(id, sprov) {
+                if (sprov.serial == sig.serial) {
+                    signature = sprov;
+                }
+            });
+            if (signature && (typeof signature.matchVAT === 'function') && signature.matchVAT(this.env.pos.company.bmf_vat_number)) {
                 return true;
             }
             // Try to match against Steuernummer
-            if (signature.matchTaxNumber(this.env.pos.company.bmf_tax_number)) {
+            if (signature && (typeof signature.matchTaxNumber === 'function') && signature.matchTaxNumber(this.env.pos.company.bmf_tax_number)) {
                 return true;
             }
             return false;
-        }
-        mounted() {
-            this.set_signature_state(this.state.signature);
-            this.state.signature.try_refresh_status(this.env.pos);
         }
         async bmf_register_signature() {
             var self = this;
@@ -164,7 +182,13 @@ odoo.define('pos_rksv.RKSVSignatureProvider', function(require) {
         }
         reload_status() {
             var self = this;
-            var signature = this.env.pos.signatures.get(this.props.signature.get('serial'));
+            var signature = null;
+            var sig = self.props.signature;
+            $(this.env.pos.signatures).each(function(id, sprov) {
+                if (sprov.serial == sig.serial) {
+                    signature = sprov;
+                }
+            });
             if (!signature) {
                 Gui.showPopup('RKSVFailureWidget', {
                     'title': "Fehler",
@@ -185,6 +209,9 @@ odoo.define('pos_rksv.RKSVSignatureProvider', function(require) {
                                 popup.state.failure = response.message;
                             } else {
                                 popup.state.success = "Status: " + response.status.status;
+                                self.state.message = response.status.status;
+                                self.state.color = 'green';
+                                self.pos.rksv.statuses.signatureinheit = true;
                             }
                         },
                         function failed(message) {
@@ -202,7 +229,7 @@ odoo.define('pos_rksv.RKSVSignatureProvider', function(require) {
                 'body': 'Die gewählte Signatureinheit wird als aktive Signatureinheit ausgewählt',
                 'exec_button_title': 'Aktivieren',
                 'execute': function(popup) {
-                    self.trigger('set-signature', self.props.signature.get('serial').toString());
+                    self.env.posbus.trigger('set-signature', self.props.signature.serial.toString());
                     popup.state.success = "Neue Signatureinheit wurde aktiv gesetzt.";
                 }
             });

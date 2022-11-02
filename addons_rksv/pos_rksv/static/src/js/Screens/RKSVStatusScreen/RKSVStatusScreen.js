@@ -1,16 +1,21 @@
 odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
     'use strict';
 
-    const { useState } = owl;
+    const { onMounted, onWillUnmount, useState } = owl;
+    const rksv = require('pos_rksv.rksv');
+    const pos = require('pos_rksv.pos');
     const PosComponent = require('point_of_sale.PosComponent');
     const Registries = require('point_of_sale.Registries');
-    const { useListener } = require('web.custom_hooks');
+    const { useListener, useBus } = require("@web/core/utils/hooks");
     const { Gui } = require('point_of_sale.Gui');
 
+
     class RKSVStatusScreen extends PosComponent {
-        constructor() {
-            super(...arguments);
-            useListener('set-signature', this.__setSignature);
+        setup() {
+            super.setup();
+            var self = this;
+            useBus(this.env.posbus, 'set-signature', this.__setSignature);
+            useListener('create-new-signature', this.se_status_handler);
             this.sproviders = null;
             this.stay_open = false;
             this.active = true;
@@ -42,26 +47,26 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 this.posbox_status_handler();
                 this.rk_status_handler();
                 this.se_status_handler();
-            }
-        }
-        mounted() {
-            this.active = true;
-            if (this.props.stay_open) {
-                this.stay_open = this.props.stay_open;
-            }else {
-                this.stay_open = false;
-            }
-            this.env.pos.rksv.update_bmf_rk_status();
-            // Do rerender signature providers
-            this.render_sproviders();
-            // This will signal us the new status as soon as we get it
-            var signature = this.env.pos.get('signature');
-            if (signature) {
-                signature.try_refresh_status(this.env.pos);
-            }
-        }
-        willUnmount() {
-            this.active = false;
+            };
+            onMounted(() => {
+                this.active = true;
+                if (this.props.stay_open) {
+                    this.stay_open = this.props.stay_open;
+                }else {
+                    this.stay_open = false;
+                }
+                this.env.pos.rksv.update_bmf_rk_status();
+                // Do rerender signature providers
+                this.render_sproviders();
+                // This will signal us the new status as soon as we get it
+                var signature = this.env.proxy.get('signature');
+                if (signature) {
+                    signature.try_refresh_status(this.env.pos);
+                }
+            });
+            onWillUnmount(() => {
+                this.active = false;
+            });
         }
         async close_rksv() {
             this.stay_open = false;
@@ -97,10 +102,10 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 let result = await pos.push_single_order(order);
                 self.proxy_informed = true;
                 self.inform_running = false;
-                var mode = pos.get('cashbox_mode');
+                var mode = pos.env.proxy.get('cashbox_mode');
                 if (mode == "signature_failed") {
                     // Set and signal active mode
-                    pos.set('cashbox_mode', 'active');
+                    pos.env.proxy.set('cashbox_mode', 'active');
                 }
                 this.rpc({
                     model: 'pos.config',
@@ -214,6 +219,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
             // - Do not open on only WLAN lost
             if ((!this.active) && ((!this.env.pos.rksv.all_ok()) || (this.env.pos.rksv.auto_receipt_needed())) && (!this.emergency_mode()) && (!this.env.pos.rksv.lost_wlan())) {
                 this.showScreen('RKSVStatusScreen');
+                this.posbox_status_handler()
             } else if ((this.active) && (!this.env.pos.rksv.all_ok()) && (!this.emergency_mode())) {
                 // Already active - ok - stay active
             } else if ((this.active) && ((this.env.pos.rksv.all_ok()) || (this.emergency_mode())) && (!this.env.pos.rksv.auto_receipt_needed())) {
@@ -230,8 +236,8 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 var order = this.env.pos.get_order();
                 if (order) {
                     var previous = order.get_screen_data('previous-screen');
-                    if ((!previous) || (previous === 'rksv_status')) {
-                        this.trigger('show-normal-start-screen');
+                    if ((!previous) || (previous.name === 'RKSVStatusScreen')) {
+                        this.showScreen("ProductScreen");
                     } else {
                         this.showScreen(previous.name);
                     }
@@ -250,27 +256,25 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 return;
             }
             // Listen on status update for signaturs - display the change here
-            this.env.pos.signatures.bind('add remove', function(signature) {
-                // Do rerender the sprovider view
-                self.render_sproviders();
-            });
+            useBus(self.env.posbus, 'create-new-signature', this.render_sproviders);
+            useBus(self.env.posbus, 'render-sproviders', this.render_sproviders);
         }
         rk_status_handler() {
             var self = this;
             // Listen on status update for kasse
-            self.env.pos.bind('change:bmf_status_rk', function(pos, status) {
+            self.env.proxy.on('change:bmf_status_rk', self,  function(pos, status) {
                 //check rk  -needs to be registered with bmf
                 if ((!self.env.pos.config.cashregisterid) || (self.env.pos.config.cashregisterid.trim() === "")) {
                     self.state.cashbox_color = 'orange';
                     self.state.cashbox_message = "Keine gültige KassenID ist gesetzt !";
                     self.state.cashbox_activate_display = 'none';
-                } else if (status.success) {
+                } else if (status.newValue.success) {
                     self.state.cashbox_color = 'green';
-                    self.state.cashbox_message = status.message;
+                    self.state.cashbox_message = status.newValue.message;
                     self.state.cashbox_activate_display = 'none';
                 } else {
                     self.state.cashbox_color = 'red';
-                    self.state.cashbox_message = status.message;
+                    self.state.cashbox_message = status.newValue.message;
                     if ((self.env.pos.rksv.bmf_auth_data()===true) && (!(status.connection===false))) {
                         self.state.cashbox_activate_display = 'visible';
                     } else {
@@ -281,7 +285,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 self.auto_open_close();
             });
             // Listen on state changes for the mode flag
-            self.env.pos.bind('change:cashbox_mode', function (pos, state) {
+            useBus(self.env.posbus, 'change:cashbox_mode', function (pos, state) {
                 // Do rerender the sprovider view
                 self.render_sproviders();
                 self.auto_open_close();
@@ -289,7 +293,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
         }
         posbox_status_handler () {
             var self = this;
-            this.env.pos.proxy.on('change:status', this, function (eh, status) {
+            this.env.proxy.on('change:status', this, function (eh, status) {
                 // Do update the datetime and status here
                 if (status.newValue.drivers.rksv && status.newValue.drivers.rksv.posbox_vienna_datetime) {
                     self.state.rksv_posbox_datetime = status.newValue.drivers.rksv.posbox_vienna_datetime;
@@ -304,7 +308,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                     self.state.rksv_bmf_version = status.newValue.drivers.rksv.posbox_bmf_mod_version.version;
                 }
                 // Also check current bmf_status_rk
-                if ((status.newValue.status == "connected") && (!this.env.pos.get('bmf_status_rk').success)) {
+                if ((status.newValue.status == "connected") && (!this.env.proxy.get('bmf_status_rk') == 'undefined')) {
                     // BMF Status RK is false - so do recheck the status here
                     self.env.pos.rksv.update_bmf_rk_status();
                 }
@@ -320,7 +324,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                 if (status.newValue.status === 'connected' && (!(self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
                     var rksvstatus = status.newValue.drivers.rksv ? status.newValue.drivers.rksv.status : false;
                     self.state.cashbox_mode = status.newValue.drivers.rksv.cashbox_mode;
-                    self.env.pos.set('cashbox_mode', status.newValue.drivers.rksv.cashbox_mode);
+                    self.env.proxy.set('cashbox_mode', status.newValue.drivers.rksv.cashbox_mode);
                     var rksvmessage = status.newValue.drivers.rksv && status.newValue.drivers.rksv.message ? status.newValue.drivers.rksv.message : false;
                     if (!rksvstatus) {
                         self.state.rksv_status_color = 'red';
@@ -383,11 +387,11 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
                     self.state.rksv_status_color = 'red';
                     self.state.rksv_status_message = "Kasse ist deaktviert !";
                 }
-                if (self.env.pos.get('cashbox_mode') == 'signature_failed'){
+                if (self.env.proxy.get('cashbox_mode') == 'signature_failed'){
                     // TODO
                     //self.$el.find('.sprovider-btn').show()
                 }
-                if (self.env.pos.get('cashbox_mode') == 'posbox_failed'){
+                if (self.env.proxy.get('cashbox_mode') == 'posbox_failed'){
                     // TODO
                 }
                 self.auto_open_close();
@@ -395,7 +399,7 @@ odoo.define('pos_rksv.RKSVStatusScreen', function(require) {
         }
         render_sproviders () {
             /* Render list of available signatures */
-            this.state.signatures = this.env.pos.signatures.models;
+            this.state.signatures = this.env.pos.signatures;
         }
         
     }

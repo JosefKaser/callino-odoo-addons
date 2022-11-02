@@ -1,9 +1,11 @@
 odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
     "use strict";
 
-    const { useState, useRef } = owl.hooks;
+    const { useState } = owl;
+    const { useListener } = require("@web/core/utils/hooks");
     const AbstractAwaitablePopup = require('point_of_sale.AbstractAwaitablePopup');
     const Registries = require('point_of_sale.Registries');
+    const { useRef } = owl;
 
     /*
     RKSV Generic Popup Widget
@@ -15,17 +17,17 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
         constructor() {
             super(...arguments);
             this.state = useState({
-                title: arguments[1].title,
-                exec_button_title: arguments[1].exec_button_title,
-                kundeninfo: arguments[1].kundeninfo,
-                kundeninfo_title: arguments[1].kundeninfo_title,
+                title: arguments[0].title,
+                exec_button_title: arguments[0].exec_button_title,
+                kundeninfo: arguments[0].kundeninfo,
+                kundeninfo_title: arguments[0].kundeninfo_title,
                 authorized: false,
                 execute_available: false,
                 loading: false,
                 failure: false,
                 success: false,
-                body: arguments[1].body,
-                execute: arguments[1].execute,
+                body: arguments[0].body,
+                execute: arguments[0].execute,
             });
             this.passwordRef = useRef('password');
             this.kundeninfo = useRef('kundeninfo');
@@ -99,11 +101,11 @@ odoo.define('pos_rksv.RKSVPopupWidget', function (require) {
     }
 
     RKSVPopupWidget.template = 'RKSVPopupWidget';
-    RKSVPopupWidget.defaultProps = {
+    /*RKSVPopupWidget.defaultProps = {
         title: 'Title',
         exec_button_title: 'Ausführen',
         kundeninfo: '',
-    };
+    };*/
 
     Registries.Component.add(RKSVPopupWidget);
 

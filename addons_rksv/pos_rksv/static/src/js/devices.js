@@ -1,16 +1,16 @@
 odoo.define('pos_rksv.devices', function (require) {
     "use strict";
 
-    var devices = require('point_of_sale.devices');
+    var ProxyDevice = require('point_of_sale.devices').ProxyDevice;
+    const Registries = require('point_of_sale.Registries');
     var core = require('web.core');
 
     //var QWeb = core.qweb;
     var _t = core._t;
 
-    // Also still ok for odoo pos v14
-    devices.ProxyDevice.include({
+    ProxyDevice.include({
         // sorry - we have to complete overwrite this function
-        keepalive: function () {
+        keepalive() {
             var self = this;
             if (!self.pos.config.iface_rksv) {
                 return self._super();
@@ -37,6 +37,8 @@ odoo.define('pos_rksv.devices', function (require) {
                 this.keptalive = true;
                 status();
             }
-        },
+        }
     });
+
+    // Registries.Model.extend(ProxyDevice, RKSVProxyDevice);
 });

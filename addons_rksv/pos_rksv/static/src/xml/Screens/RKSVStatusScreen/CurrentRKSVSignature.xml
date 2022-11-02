@@ -2,16 +2,16 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="CurrentRKSVSignature" owl="1">
-        <div class="sprovider" t-if="pos.get('cashbox_mode') == 'active'">
+        <div class="sprovider" t-if="pos.cashbox_mode == 'active'">
             <h1>Aktuelle Signatur</h1>
-            <h2><t t-esc="signature.get('serial')"/></h2>
-            <p><t t-esc="signature.get('subject')"/></p>
+            <h2><t t-esc="signature.serial"/></h2>
+            <p><t t-esc="signature.subject"/></p>
             <t t-if="card  == null">
                 <h2 style="color:red;">Nicht verfügbar!</h2>
                 <button class="rk-ausfall-se">Ausfallmodus aktivieren!</button>
                 <p style="color:red;">Ausfälle über 48 Stunden müssen dem BMF gemeldet werden!</p>
                 <p>Sie können bei vorhandener Interneverbindung den Ausfall der Signatureinheit hier direkt dem BMF melden</p>
-                <button class="sprovider-bmf-ausfall-btn" t-att-serial="signature.get('serial')">Ausfall an BMF melden</button>
+                <button class="sprovider-bmf-ausfall-btn" t-att-serial="signature.serial">Ausfall an BMF melden</button>
             </t>
         </div>
         <div class="sprovider" t-if="pos.get('cashbox_mode') == 'signature_failed'">
@@ -20,7 +20,7 @@
             <div name="sprovider_bmf_report">
                 <p style="color:red;">Ausfälle über 48 Stunden müssen dem BMF gemeldet werden!</p>
                 <p>Sie können bei vorhandener Internetverbindung den Ausfall der Signatureinheit hier direkt dem BMF melden</p>
-                <button class="sprovider-bmf-ausfall-btn" t-att-serial="signature.get('serial')">Ausfall an BMF melden</button>
+                <button class="sprovider-bmf-ausfall-btn" t-att-serial="signature.serial">Ausfall an BMF melden</button>
             </div>
         </div>
     </t>

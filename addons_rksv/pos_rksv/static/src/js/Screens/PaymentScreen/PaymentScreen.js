@@ -1,25 +1,26 @@
 odoo.define('pos_rksv.RKSVPaymentScreen', function(require) {
     'use strict';
 
-    const { useState, useRef } = owl.hooks;
+    const { useState } = owl;
+    const { useListener } = require("@web/core/utils/hooks");
     const PaymentScreen = require('point_of_sale.PaymentScreen');
     const Registries = require('point_of_sale.Registries');
 
     const RKSVPaymentScreen = (PaymentScreen) =>
         class extends PaymentScreen {
-            constructor() {
-                super(...arguments);
+            setup() {
+                super.setup();
                 this.rksvstate = useState({
                     'validate': true,
                 });
             }
             mounted() {
                 if (!this.env.pos.config.iface_rksv) { return; }
-                this.env.pos.proxy.on('change:status', this, this._onChangeStatus);
+                this.env.proxy.on('change:status', this, this._onChangeStatus);
             }
             willUnmount() {
                 if (!this.env.pos.config.iface_rksv) { return; }
-                this.env.pos.proxy.off('change:status', this, this._onChangeStatus);
+                this.env.proxy.off('change:status', this, this._onChangeStatus);
             }
             _onChangeStatus(posProxy, statusChange) {
                 // Do disable validate button

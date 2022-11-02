@@ -27,11 +27,7 @@ POS Product Reference
         'point_of_sale.assets': [
             'pos_product_reference/static/src/js/models.js',
             'pos_product_reference/static/src/js/Orderline.js',
-        ],
-        'point_of_sale.pos_assets_backend_style': [
             "pos_product_reference/static/src/css/pos_product_ref.css",
-        ],
-        'web.assets_qweb': [
             'pos_product_reference/static/src/xml/Orderline.xml'
         ]
     },

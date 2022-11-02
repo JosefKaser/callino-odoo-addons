@@ -1,46 +1,42 @@
 odoo.define('pos_product_reference.models', function (require) {
     "use strict";
 
-    var models = require('point_of_sale.models');
+    var { Order, Orderline } = require('point_of_sale.models');
+    const Registries = require('point_of_sale.Registries');
 
-    /*
-      Here we do add the fields and the models we need to load from the server
-    */
-    models.load_fields("product.product", ["product_ref", "product_ref_textarea"]);
-
-    var OrderlineSuper = models.Orderline.prototype;
-    models.Orderline = models.Orderline.extend({
-        initialize: function (attr, options) {
+    const RKSVOrderline = (Orderline) => class PosSaleOrderline extends Orderline {
+        constructor(obj, options) {
+            super(...arguments);
             this.product_ref_text = '';
-            // Supercall must be after the var init step - because it does load the values from json
-            OrderlineSuper.initialize.call(this, attr, options);
-        },
-        clone: function () {
-            var data = OrderlineSuper.clone.call(this);
+        }
+        clone() {
+            var data = super.clone(...arguments);
             data.product_ref_text = this.product_ref_text;
             return data;
-        },
-        set_product_reference: function (ref) {
+        }
+        set_product_reference(ref) {
             this.product_ref_text = ref;
-            this.trigger('change',this);
-        },
-        get_product_reference: function () {
+            this.pos.env.posbus.trigger('change',this);
+        }
+        get_product_reference() {
             return this.product_ref_text;
-        },
-        export_as_JSON: function () {
-            var data = OrderlineSuper.export_as_JSON.call(this);
-            data.product_ref_text = this.get_product_reference();
-            return data;
-        },
-        init_from_JSON: function(json) {
-            OrderlineSuper.init_from_JSON.call(this, json);
-            this.product_ref_text = json.product_ref_text;
-        },
-        export_for_printing: function () {
-            var data = OrderlineSuper.export_for_printing.call(this);
+        }
+        export_as_JSON() {
+            var data = super.export_as_JSON(...arguments);
             data.product_ref_text = this.get_product_reference();
             return data;
         }
-    });
+        init_from_JSON(json) {
+            super.init_from_JSON(...arguments);
+            this.product_ref_text = json.product_ref_text;
+        }
+        export_for_printing() {
+            var data = super.export_for_printing(...arguments);
+            data.product_ref_text = this.get_product_reference();
+            return data;
+        }
+    };
+
+    Registries.Model.extend(Orderline, RKSVOrderline);
 
 });

@@ -4,6 +4,7 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
     const DebugWidget = require('point_of_sale.DebugWidget');
     const Registries = require('point_of_sale.Registries');
     const { Gui } = require('point_of_sale.Gui');
+    const { useRef } = owl;
 
     const RKSVDebugWidget = (DebugWidget) =>
         class extends DebugWidget {
@@ -48,7 +49,7 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
                     'body': "DEP Crypt Container schreiben",
                     'exec_button_title': 'Erzeugen',
                     'execute': function (popup) {
-                        self.env.pos.proxy.connection.rpc(
+                        self.pos.env.proxy.connection.rpc(
                             '/hw_proxy/rksv_write_dep_crypt_container',
                             Object.assign(self.env.pos.rksv.get_rksv_info()),
                             {timeout: 7500}
@@ -124,16 +125,17 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
                         if (self.env.pos.rksv.check_proxy_connection()){
                             self.env.pos.rksv.bmf_status_rpc_call().then(
                                 function done(response) {
-                                    self.env.pos.set('bmf_status_rk', response);
+                                    self.env.proxy.set('bmf_status_rk', response);
                                     if (response.success === false) {
                                         popup.state.failure = response.message;
                                     } else {
                                         popup.state.success = response.message;
+                                        self.env.pos.rksv.statuses.kasse = true;
                                         popup.state.execute_available = false;
                                     }
                                 },
                                 function failed() {
-                                    self.env.pos.set('bmf_status_rk', {
+                                    self.env.proxy.set('bmf_status_rk', {
                                         'success': false,
                                         'message': "Fehler bei der Kommunikation mit der PosBox!"
                                     });
@@ -141,7 +143,7 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
                                 }
                             );
                         } else {
-                            self.env.pos.set('bmf_status_rk', {
+                            self.env.proxy.set('bmf_status_rk', {
                                 'success': false,
                                 'message': "Fehler bei der Kommunikation mit der PosBox (Proxy nicht initialisiert)!"
                             });
@@ -150,7 +152,7 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
                     },
                 });
             }
-            async rksv_reprint_special_receipt(type, title) {
+            async rksv_reprint_start_receipt() {
                 var self = this;
                 if (!this.env.pos.rksv.check_proxy_connection()) {
                     Gui.showPopup('RKSVFailureWidget', {
@@ -160,8 +162,8 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
                     return;
                 }
                 // Get minimal data needed for printing from the posbox
-                this.env.pos.proxy.connection.rpc(
-                    '/hw_proxy/get_'+type+'_receipt',
+                this.env.proxy.connection.rpc(
+                    '/hw_proxy/get_start_receipt',
                     Object.assign(this.env.pos.rksv.get_rksv_info()),
                     {timeout: 7500}
                 ).then(
@@ -175,9 +177,89 @@ odoo.define('pos_rksv.DebugWidget', function(require) {
                             // in response we should have the needed data to reprint - we assume to have a pos printer here
                             var receipt = response.receipt;
                             receipt.company = self.env.pos.company;
-                            receipt.title = title;
+                            receipt.title = "Startbeleg";
                             self.showPopup('RKSVReceiptPopup', {
-                                title: title,
+                                title: "Startbeleg",
+                                receipt: receipt,
+                            });
+                        }
+                    },
+                    function failed() {
+                        Gui.showPopup('RKSVFailureWidget', {
+                            'title': "Fehler",
+                            'body':  "Fehler bei der Kommunikation mit der PosBox!"
+                        });
+                    }
+                );
+            }
+            async rksv_reprint_year_receipt() {
+                var self = this;
+                if (!this.env.pos.rksv.check_proxy_connection()) {
+                    Gui.showPopup('RKSVFailureWidget', {
+                        'title': "Fehler",
+                        'body':  "PosBox Verbindung wird für diese Funktion benötigt !"
+                    });
+                    return;
+                }
+                // Get minimal data needed for printing from the posbox
+                this.env.proxy.connection.rpc(
+                    '/hw_proxy/get_year_receipt',
+                    Object.assign(this.env.pos.rksv.get_rksv_info()),
+                    {timeout: 7500}
+                ).then(
+                    function done(response) {
+                        if (response.success === false) {
+                            Gui.showPopup('RKSVFailureWidget', {
+                                'title': "Fehler",
+                                'body':  response.message
+                            });
+                        } else {
+                            // in response we should have the needed data to reprint - we assume to have a pos printer here
+                            var receipt = response.receipt;
+                            receipt.company = self.env.pos.company;
+                            receipt.title = "Jahresbeleg";
+                            self.showPopup('RKSVReceiptPopup', {
+                                title: "Jahresbeleg",
+                                receipt: receipt,
+                            });
+                        }
+                    },
+                    function failed() {
+                        Gui.showPopup('RKSVFailureWidget', {
+                            'title': "Fehler",
+                            'body':  "Fehler bei der Kommunikation mit der PosBox!"
+                        });
+                    }
+                );
+            }
+            async rksv_reprint_month_receipt(type, title) {
+                var self = this;
+                if (!this.env.pos.rksv.check_proxy_connection()) {
+                    Gui.showPopup('RKSVFailureWidget', {
+                        'title': "Fehler",
+                        'body':  "PosBox Verbindung wird für diese Funktion benötigt !"
+                    });
+                    return;
+                }
+                // Get minimal data needed for printing from the posbox
+                this.env.proxy.connection.rpc(
+                    '/hw_proxy/get_month_receipt',
+                    Object.assign(this.env.pos.rksv.get_rksv_info()),
+                    {timeout: 7500}
+                ).then(
+                    function done(response) {
+                        if (response.success === false) {
+                            Gui.showPopup('RKSVFailureWidget', {
+                                'title': "Fehler",
+                                'body':  response.message
+                            });
+                        } else {
+                            // in response we should have the needed data to reprint - we assume to have a pos printer here
+                            var receipt = response.receipt;
+                            receipt.company = self.env.pos.company;
+                            receipt.title = "Monatsbeleg";
+                            self.showPopup('RKSVReceiptPopup', {
+                                title: "Monatsbeleg",
                                 receipt: receipt,
                             });
                         }

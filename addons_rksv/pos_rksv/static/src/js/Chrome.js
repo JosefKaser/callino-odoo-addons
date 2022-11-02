@@ -3,12 +3,12 @@ odoo.define('pos_rksv.chrome', function (require) {
 
     const Chrome = require('point_of_sale.Chrome');
     const Registries = require('point_of_sale.Registries');
-    const { useListener } = require('web.custom_hooks');
+    const { useListener } = require("@web/core/utils/hooks");
 
     const RKSVChrome = (Chrome) =>
         class extends Chrome {
-            constructor() {
-                super(...arguments);
+            setup() {
+                super.setup();
                 useListener('show-start-screen', this._showStartScreen);
                 useListener('show-normal-start-screen', this._showNormalStartScreen);
             }
@@ -21,7 +21,7 @@ odoo.define('pos_rksv.chrome', function (require) {
              * Do not set `RKSVStatusScreen` to the order.
              */
             _setScreenData(name) {
-                if (name === 'RKSVStatusScreen') return;
+                //if (name === 'RKSVStatusScreen') return;
                 super._setScreenData(...arguments);
             }
             /**

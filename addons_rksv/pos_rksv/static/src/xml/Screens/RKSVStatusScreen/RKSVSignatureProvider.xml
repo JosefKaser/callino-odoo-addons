@@ -3,9 +3,9 @@
 
     <t t-name="RKSVSignatureProvider" owl="1">
         <div class="sprovider">
-            <p><b><t t-esc="props.signature.get('reader')"/></b></p>
-            <p><t t-esc="props.signature.get('subject')"/></p>
-            <p>Seriennummer: <t t-esc="props.signature.get('serial')"/></p>
+            <p><b><t t-esc="props.signature.reader"/></b></p>
+            <p><t t-esc="props.signature.subject"/></p>
+            <p>Seriennummer: <t t-esc="props.signature.serial"/></p>
             <div class="signature-provider-status-indicator clearfix">
                 <div class="indicator" t-att-style="'background:'+state.color"/>
                 <label>BMF (Signature):</label>

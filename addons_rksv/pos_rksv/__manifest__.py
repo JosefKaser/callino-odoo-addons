@@ -52,11 +52,6 @@ Registrierkassen Modul für die Anforderungen der Österreichischen Registrierka
             'pos_rksv/static/src/js/Screens/ReceiptScreen/ReceiptScreen.js',
             'pos_rksv/static/src/js/Screens/RKSVStatusScreen/RKSVStatusScreen.js',
             'pos_rksv/static/src/js/Screens/RKSVStatusScreen/RKSVSignatureProvider.js',
-        ],
-        'point_of_sale.pos_assets_backend_style': [
-            "pos_rksv/static/src/css/rksv.css",
-        ],
-        'web.assets_qweb': [
             'pos_rksv/static/src/xml/Screens/ReceiptScreen/OrderReceipt.xml',
             'pos_rksv/static/src/xml/rksv.xml',
             'pos_rksv/static/src/xml/Chrome.xml',
@@ -72,6 +67,9 @@ Registrierkassen Modul für die Anforderungen der Österreichischen Registrierka
             'pos_rksv/static/src/xml/Popups/RKSVFAPopupWidget.xml',
             'pos_rksv/static/src/xml/Popups/RKSVReceiptPopup/RKSVReceiptPopup.xml',
             'pos_rksv/static/src/xml/Popups/RKSVReceiptPopup/RKSVReceipt.xml',
+        ],
+        'point_of_sale.pos_assets_backend_style': [
+            "pos_rksv/static/src/css/rksv.css",
         ],
     },
     'installable': True,

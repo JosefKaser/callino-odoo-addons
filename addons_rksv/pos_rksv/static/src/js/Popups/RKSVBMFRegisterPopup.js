@@ -38,12 +38,12 @@ odoo.define('pos_rksv.RKSVBMFRegisterPopup', function (require) {
             this.state.execute_available = false;
         }
     }
-    RKSVBMFRegisterPopup.defaultProps = {
+    /*RKSVBMFRegisterPopup.defaultProps = {
         title: 'Kasse beim BMF registrieren',
         body: 'Registrierkasse wird über Finanzonline registriert.',
         exec_button_title: 'Registrieren',
         kundeninfo: '',
-    };
+    };*/
     Registries.Component.add(RKSVBMFRegisterPopup);
 
     return RKSVBMFRegisterPopup;

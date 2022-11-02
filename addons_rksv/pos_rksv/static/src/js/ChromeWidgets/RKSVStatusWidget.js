@@ -1,7 +1,7 @@
 odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
     'use strict';
 
-    const { useState } = owl;
+    const { onMounted, onWillUnmount, useState } = owl;
     const PosComponent = require('point_of_sale.PosComponent');
     const Registries = require('point_of_sale.Registries');
 
@@ -15,14 +15,14 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
                 status: 'setup',
                 msg: '',
             });
-        }
-        mounted() {
-            if (!this.env.pos.config.iface_rksv) { return; }
-            this.env.pos.proxy.on('change:status', this, this._onChangeStatus);
-        }
-        willUnmount() {
-            if (!this.env.pos.config.iface_rksv) { return; }
-            this.env.pos.proxy.off('change:status', this, this._onChangeStatus);
+            onMounted(() => {
+                if (!this.env.pos.config.iface_rksv) { return; }
+                this.env.proxy.on('change:status', this, this._onChangeStatus);
+            });
+            onWillUnmount(() => {
+                if (!this.env.pos.config.iface_rksv) { return; }
+                this.env.proxy.off('change:status', this, this._onChangeStatus);
+            });
         }
         async onClick() {
             this.showScreen('RKSVStatusScreen', {
@@ -41,7 +41,7 @@ odoo.define('pos_rksv.RKSVStatusWidget', function(require) {
         }
         _set_smart_status(status) {
             var self = this;
-            var mode = self.env.pos.get('cashbox_mode');
+            var mode = self.env.proxy.get('cashbox_mode');
             if (status.status === 'connected' && (!(self.env.pos.config.state === "setup" || self.env.pos.config.state === "failure" || self.env.pos.config.state === "inactive"))) {
                 var rksvstatus = status.drivers.rksv ? status.drivers.rksv.status : false;
                 var cashbox_mode = status.drivers.rksv.cashbox_mode;

@@ -23,7 +23,7 @@
                         <field name="iface_rksv" attrs="{'readonly': [('rksv_at', '=', True), ('iface_rksv', '=', True)], 'invisible': [('rksv_at', '=', False), ('iface_rksv', '=', False)]}"/>
                     </div>
                 </xpath>
-                <xpath expr="//div[@id='receipt']" position="before">
+                <xpath expr="//div[@groups='base.group_system']" position="before">
                     <group string="Registrierkassenverordnung (Österreich)" attrs="{'invisible': [('iface_rksv', '=', False)]}">
                         <group>
                             <field name="cashregisterid"/>

@@ -1,7 +1,8 @@
 odoo.define('pos_rksv.RKSVFAPopupWidget', function (require) {
     "use strict";
 
-    const { useState, useRef } = owl.hooks;
+    const { useState } = owl;
+    const { useListener } = require("@web/core/utils/hooks");
     const AbstractAwaitablePopup = require('point_of_sale.AbstractAwaitablePopup');
     const Registries = require('point_of_sale.Registries');
 
@@ -29,7 +30,7 @@ odoo.define('pos_rksv.RKSVFAPopupWidget', function (require) {
             this.state.cashregisterid = this.env.pos.config.cashregisterid;
             this.state.uid = this.env.pos.company.vat;
             this.state.message = "Bitte warten...";
-            this.env.pos.proxy.connection.rpc(
+            this.pos.env.proxy.connection.rpc(
                     '/hw_proxy/rksv_get_fa_data',
                     Object.assign(this.env.pos.rksv.get_rksv_info()),
                     {timeout: 7500}
@@ -52,9 +53,9 @@ odoo.define('pos_rksv.RKSVFAPopupWidget', function (require) {
     }
 
     RKSVFAPopupWidget.template = 'RKSVFAPopupWidget';
-    RKSVFAPopupWidget.defaultProps = {
+    /*RKSVFAPopupWidget.defaultProps = {
         title: 'Finanzamt Daten',
-    };
+    };*/
 
     Registries.Component.add(RKSVFAPopupWidget);
 

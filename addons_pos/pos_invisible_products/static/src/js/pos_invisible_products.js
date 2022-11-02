@@ -2,9 +2,6 @@ odoo.define('pos_invisible_products.db', function (require) {
     "use strict";
 
     var PosDB = require("point_of_sale.DB");
-    var models = require('point_of_sale.models');
-
-    models.load_fields("product.product", ['pos_product_invisible']);
 
     PosDB.include({
         invisible_filtered: function(products) {
@@ -21,17 +18,23 @@ odoo.define('pos_invisible_products.db', function (require) {
             }
         },
         // Filter out products which should be invisible
-        get_product_by_category: function (category_id) {
-            var products = this._super(category_id);
-            return this.invisible_filtered(products);
-        },
-        search_product_in_category: function (category_id, query){
-            var products = this._super(category_id, query);
-            return this.invisible_filtered(products);
+        get_product_by_category: function(category_id) {
+            var product_ids  = this.product_by_category_id[category_id];
+            var list = [];
+            if (product_ids) {
+                for (var i = 0, len = Math.min(product_ids.length, this.limit); i < len; i++) {
+                    const product = this.product_by_id[product_ids[i]];
+                    if (!(product.active && product.available_in_pos && !product.pos_product_invisible)) continue;
+                    list.push(product);
+                }
+            }
+            return list;
+         },
+        search_product_in_category: function(category_id, query){
+            return this.invisible_filtered(this._super(category_id, query));
         },
         get_product_by_barcode: function(barcode){
-            var products = this._super(barcode);
-            return this.invisible_filtered(products);
+            return this.invisible_filtered(this._super(barcode));
         }
     });
 });

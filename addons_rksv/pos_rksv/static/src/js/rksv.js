@@ -6,63 +6,71 @@ odoo.define('pos_rksv.rksv', function (require) {
     require('pos_rksv.models');
     const { Gui } = require('point_of_sale.Gui');
     var models = require('point_of_sale.models');
+    var Signature = require('pos_rksv.models').Signature;
     var QWeb = core.qweb;
     var rpc = require('web.rpc');
+    const { useListener, useBus } = require("@web/core/utils/hooks");
+    const Registries = require('point_of_sale.Registries');
+    const PosGlobalState = models.PosGlobalState;
     var _t = core._t;
 
     /* RKSV Core Extension */
 
-    var RKSV = core.Class.extend({
-        timeout: {timeout: 7500},
-        proxy_informed: true,
-        inform_running: false,
-        start_receipt_in_progress: false,
-        start_receipt_failed: false,
-        year_receipt_in_progress: false,
-        month_receipt_in_progress: false,
-        statuses: {
-            'posbox': false,
-            'kasse': false,
-            'signatureinheit': false,
-            'rksv': false,
-            'rksv_products_exists': false
-        },
-        init: function (attributes) {
-            this.pos = attributes.pos;
-            this.proxy = attributes.proxy;
+    class RKSV extends PosGlobalState {
+        constructor(obj) {
+            super(obj);
+            this.timeout = {timeout: 7500};
+            this.proxy_informed = true;
+            this.inform_running = false;
+            this.start_receipt_in_progress = false;
+            this.start_receipt_failed = false;
+            this.year_receipt_in_progress = false;
+            this.month_receipt_in_progress = false;
+            this.statuses = {
+                'posbox': false,
+                'kasse': false,
+                'signatureinheit': false,
+                'rksv': false,
+                'rksv_products_exists': false
+            };
             this.signature = null;
             this.last_proxy_status = null;
             var self = this;
             // Will get called when signature model is loaded
-            this.pos.bind('change:signature', function(pos, signature) {
-                if (signature) {
-                    self.inform_proxy(signature);
+            useBus(this.pos.env.posbus, 'change:signature', function(pos, signature) {
+                if (pos.detail.signature) {
+                    self.inform_proxy(pos.detail.signature);
                 }
+                if (pos.detail.signature) {
+                    self.inform_proxy(pos.detail.signature);
+                }
+                self._setSignatureState(pos, pos.detail.signature)
             });
             // Bind to signature status changes
-            if (this.pos.signatures){
-                this.pos.signatures.bind('add remove change', function(signature) {
-                    if (!signature.isActive(self.pos)) {
-                        // Ignore this update if it does not belong to the active signature
-                        return;
-                    }
-                    if (signature.get('bmf_last_status') === 'IN_BETRIEB') {
-                        self.statuses.signatureinheit = true;
-                    } else {
-                        self.statuses.signatureinheit = false;
-                    }
-                });
+            if (this.signatures){
+                useBus(this.pos.env.posbus, 'change:signature', this._setSignatureState);
             }
             // Bind on RK BMF Status change
-            this.pos.bind('change:bmf_status_rk', function(pos, status) {
+            useBus(this.pos.env.posbus, 'change:bmf_status_rk', function(pos, status) {
                 if (status.success) {
                     self.statuses.kasse = true;
                 } else {
                     self.statuses.kasse = false;
                 }
             });
-        },
-        proxy_status_change: function (eh, status, statusWidget) {
+        }
+        _setSignatureState(event, signature) {
+            if (!signature.isActive(posmodel, signature)) {
+                // Ignore this update if it does not belong to the active signature
+                return;
+            }
+            if (signature.bmf_last_status === 'IN_BETRIEB') {
+                posmodel.rksv.statuses.signatureinheit = true;
+            } else {
+                posmodel.rksv.statuses.signatureinheit = false;
+            }
+        }
+        proxy_status_change(eh, status, statusWidget) {
             var self = this;
             // Ignore the status change when rksv is not enabled
             if (!self.pos.config.iface_rksv) {
@@ -93,22 +101,31 @@ odoo.define('pos_rksv.rksv', function (require) {
             }
             // Check for month product
             if ((self.statuses['rksv_products_exists']===false)
-                && (self.pos.config.start_product_id) && (self.pos.db.get_product_by_id(self.pos.config.start_product_id[0]))
-                && (self.pos.config.month_product_id) && (self.pos.db.get_product_by_id(self.pos.config.month_product_id[0]))
-                && (self.pos.config.null_product_id) && (self.pos.db.get_product_by_id(self.pos.config.null_product_id[0]))
-                && (self.pos.config.year_product_id) && (self.pos.db.get_product_by_id(self.pos.config.year_product_id[0]))) {
+                && (self.pos.config.start_product_id) && (self.pos.db.get_product_by_id(self.pos.config.start_product_id[0]) != 'undefined')
+                && (self.pos.config.month_product_id) && (self.pos.db.get_product_by_id(self.pos.config.month_product_id[0]) != 'undefined')
+                && (self.pos.config.null_product_id) && (self.pos.db.get_product_by_id(self.pos.config.null_product_id[0]) != 'undefined')
+                && (self.pos.config.year_product_id) && (self.pos.db.get_product_by_id(self.pos.config.year_product_id[0]) != 'undefined')) {
                 self.statuses['rksv_products_exists'] = true;
             }
             // Check status reponse from proxy - which signatures does the proxy has available ?
             if ((status.newValue.drivers.rksv) && (status.newValue.drivers.rksv.cards)) {
                 // Do create Backbone Signature Models out of this
                 var signatures = new Array();
-                var currentSignature = self.pos.get('signature');
+                var currentSignature = self.pos.env.proxy.get('signature');
                 $.each(status.newValue.drivers.rksv.cards, function(serial, signature) {
-                    var newSignature = new models.Signature(signature.cardinfo, {
+                    var newSignature = new Signature(signature.cardinfo, {
                         pos: self.pos
                     });
                     signatures.push(newSignature);
+                    self.pos.env.posbus.trigger('create-new-signature', {
+                        'signature': serial,
+                        'signatures': signatures
+                    });
+                    self.pos.env.posbus.trigger('render-sproviders');
+                    self.pos.env.posbus.trigger('signature-change', {
+                        'signature': serial,
+                        'signatures': signatures
+                    });
                     // Check if this is an active signature - forward status if it is
                     if ((currentSignature) && (currentSignature.get('serial') == newSignature.get('serial'))) {
                         currentSignature.set({
@@ -116,7 +133,7 @@ odoo.define('pos_rksv.rksv', function (require) {
                         })
                     }
                 });
-                self.pos.signatures.set(signatures);
+                self.pos.signatures = signatures
             }
             // Here do check for the start receipt flag - if it is set - then generate the start receipt for this cash register !
             if ((self.start_receipt_in_progress === false) &&
@@ -177,8 +194,48 @@ odoo.define('pos_rksv.rksv', function (require) {
                     self.create_month_receipt(statusWidget);
                 }
             }
-        },
-        auto_receipt_needed: function() {
+            /*if (self.pos.rksv.check_proxy_connection()){
+                self.pos.rksv.bmf_status_rpc_call().then(
+                    function done(response) {
+                        self.pos.env.proxy.set('bmf_status_rk', response);
+                        if (response.success === false) {
+                            self.env.proxy.set('bmf_status_rk', {
+                                'success': false,
+                                'message': "Fehler bei der Kommunikation mit der PosBox!"
+                            });
+                        } else {
+                            self.env.proxy.set('bmf_status_rk', {
+                                'success': false,
+                                'message': "Fehler bei der Kommunikation mit der PosBox!"
+                            });
+                        }
+                    },
+                    function failed() {
+                        self.env.proxy.set('bmf_status_rk', {
+                            'success': false,
+                            'message': "Fehler bei der Kommunikation mit der PosBox!"
+                        });
+                    }
+                );
+            } else {
+                self.env.proxy.set('bmf_status_rk', {
+                    'success': false,
+                    'message': "Fehler bei der Kommunikation mit der PosBox (Proxy nicht initialisiert)!"
+                });
+            }
+            this.pos.env.posbus.trigger('change:bmf_status_rk', {status: self.pos.env.proxy.get("bmf_status_rk")});*/
+            var config_signature = null;
+            $(self.pos.signatures).each(function(id, sprov) {
+                if (sprov.cin == self.pos.config.signature_provider_id[1]) {
+                    config_signature = sprov;
+                }
+            });
+            this.pos.rksv.signature = config_signature;
+            this.pos.env.posbus.trigger('change:signature', {signature: config_signature});
+            // self.pos.env.proxy.trigger("change:status")
+            self.update_bmf_rk_status();
+        }
+        auto_receipt_needed() {
             // If we miss rksv status - then something else is already problematic - no need to check further
             if ((!this.last_proxy_status) || (!this.last_proxy_status.drivers) || (!this.last_proxy_status.drivers.rksv))
                 return false;
@@ -191,9 +248,9 @@ odoo.define('pos_rksv.rksv', function (require) {
             if ((this.last_proxy_status.drivers.rksv.month_receipt_needed !== undefined) && (this.last_proxy_status.drivers.rksv.month_receipt_needed === true))
                 return true;
             return false;
-        },
-        check_proxy_connection: function(){
-            if (this.pos.proxy.connection === null) {
+        }
+        check_proxy_connection(){
+            if (this.pos.env.proxy.connection === null) {
                 console.log('No Proxy Connection available!');
                 return false;
             }
@@ -203,34 +260,34 @@ odoo.define('pos_rksv.rksv', function (require) {
                 return false;
             }
             return true;
-        },
-        proxy_rpc_call: function(url, add_params){
+        }
+        proxy_rpc_call(url, add_params){
             var params = Object.assign(this.get_default_params(), add_params);
             console.log('RPC Call URL: ', url);
             console.log('RPC Call Params: ', params);
-            return this.pos.proxy.connection.rpc(url, params);
-        },
-        get_default_params: function(){
+            return this.pos.env.proxy.connection.rpc(url, params);
+        }
+        get_default_params(){
             return {
                 'test_mode': this.pos.config.bmf_test_mode,
                 'pos_ts': moment().format(),
             }
-        },
-        get_bmf_credentials: function(){
+        }
+        get_bmf_credentials(){
             return {
                 'tid': this.pos.company.bmf_tid,
                 'benid': this.pos.company.bmf_benid,
                 'pin': this.pos.company.bmf_pin
             }
-        },
-        get_rksv_info: function(){
+        }
+        get_rksv_info(){
             return {
                 'kassenidentifikationsnummer': this.pos.config.cashregisterid,
                 'atu': this.pos.company.vat,
                 'hersteller_atu': this.pos.company.bmf_hersteller_atu
             }
-        },
-        all_ok: function() {
+        }
+        all_ok() {
             var combined_status = true;
             $.each(this.statuses, function (key, status) {
                 if (!status) {
@@ -238,22 +295,22 @@ odoo.define('pos_rksv.rksv', function (require) {
                 }
             });
             return combined_status;
-        },
-        lost_wlan: function() {
+        }
+        lost_wlan() {
             return (!this.statuses['posbox']);
-        },
-        can_sign: function() {
+        }
+        can_sign() {
             return  this.statuses['posbox'] &&
                     this.statuses['kasse'] &&
                     this.statuses['signatureinheit'] &&
                     this.statuses['rksv'];
-        },
-        print_order: function(statusWidget) {
+        }
+        print_order(statusWidget) {
             var name = 'ReceiptScreen'
             var props = {forceClose: true};
-            statusWidget.trigger('show-main-screen', {name, props});
-        },
-        create_dummy_order: function(product_id, reference) {
+            Gui.showScreen('ReceiptScreen', props);
+        }
+        create_dummy_order(product_id, reference) {
             // Get current order
             var order = this.pos.get_order();
             // Check if it is empty
@@ -278,10 +335,10 @@ odoo.define('pos_rksv.rksv', function (require) {
             order.initialize_validation_date();
             // return it
             return order;
-        },
-        create_start_receipt: function(statusWidget) {
+        }
+        create_start_receipt(statusWidget) {
             var self = this;
-            this.pos.trigger('show-main-screen', 'ProductScreen');
+            Gui.showScreen('ProductScreen');
             this.start_receipt_in_progress = true;
             // Create a new dummy order with the start product
             var order = this.create_dummy_order(this.pos.config.start_product_id[0], this.pos.config.cashregisterid);
@@ -298,13 +355,13 @@ odoo.define('pos_rksv.rksv', function (require) {
                     self.start_receipt_in_progress = false;
                 }
             );
-        },
-        create_year_receipt: function(statusWidget) {
+        }
+        create_year_receipt(statusWidget) {
             var self = this;
             if ((self.pos.get_order()) && (self.pos.get_order().start_receipt)) {
                 self.pos.get_order().finalize();
             }
-            this.pos.trigger('show-main-screen', 'ProductScreen');
+            Gui.showScreen('ProductScreen');
             if ((self.pos.get_order()) && (self.pos.get_order().start_receipt)) {
                 self.pos.get_order().finalize();
             }
@@ -325,13 +382,13 @@ odoo.define('pos_rksv.rksv', function (require) {
                     self.year_receipt_in_progress = false;
                 }
             );
-        },
-        create_month_receipt: function(statusWidget) {
+        }
+        create_month_receipt(statusWidget) {
             var self = this;
             if ((self.pos.get_order()) && (self.pos.get_order().year_receipt)) {
                 self.pos.get_order().finalize();
             }
-            this.pos.trigger('show-main-screen', 'ProductScreen');
+            Gui.showScreen('ProductScreen');
             if ((self.pos.get_order()) && (self.pos.get_order().year_receipt)) {
                 self.pos.get_order().finalize();
             }
@@ -353,8 +410,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                     self.month_receipt_in_progress = false;
                 }
             );
-        },
-        dummy_order_checks: function() {
+        }
+        dummy_order_checks() {
             var self = this;
             if (!self.check_proxy_connection()) {
                 return _t('Keine Verbindung mit der PosBox ist möglich');
@@ -363,19 +420,19 @@ odoo.define('pos_rksv.rksv', function (require) {
                 return _t('RKSV Produkte müssen gesetzt sein !');
             }
             return true;
-        },
-        inform_proxy: function (signature) {
+        }
+        inform_proxy(signature) {
             var self = this;
             this.signature = signature;
             console.log('As soon as possible we have to inform the proxy about the signature');
-            this.pos.proxy.on('change:status', this, function (eh, status) {
+            this.pos.env.proxy.on('change:status', this, function (eh, status) {
                 if ((status.newValue.status == 'connected') && (!self.proxy_informed) && (!self.inform_running) && (self.signature)) {
                     self.inform_running = true;
                     self.set_signature(self.signature);
                 }
             });
-        },
-        delete_start_receipt: function() {
+        }
+        delete_start_receipt() {
             var self = this;
             var op_popup = this.pos.gui.popup_instances.rksv_popup_widget;
             op_popup.show({}, 'Startbeleg löschen', 'Löschen');
@@ -409,8 +466,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                 op_popup.$('.execute_button').hide();
                 op_popup.$('.close_button').show();
             });
-        },
-        start_receipt_set_valid: function() {
+        }
+        start_receipt_set_valid() {
             if (!this.pos.config.bmf_test_mode) {
                 this.pos.gui.show_popup('error',{
                     'title': _t("Fehler"),
@@ -438,7 +495,7 @@ odoo.define('pos_rksv.rksv', function (require) {
                             } else {
                                 op_popup.success(response.message);
                                 // Do set the cashbox_mode to active
-                                self.pos.set('cashbox_mode', 'active');
+                                self.pos.env.proxy.set('cashbox_mode', 'active');
                             }
                         },
                         function failed() {
@@ -451,17 +508,17 @@ odoo.define('pos_rksv.rksv', function (require) {
                 op_popup.$('.execute_button').hide();
                 op_popup.$('.close_button').show();
             });
-        },
-        bmf_status_rpc_call: function () {
+        }
+        bmf_status_rpc_call() {
             var self = this;
             return self.proxy_rpc_call(
                 '/hw_proxy/status_kasse',
                 Object.assign(self.get_rksv_info(), self.get_bmf_credentials()),
                 self.timeout
             );
-        },
+        }
         // Do return true if we have bmf auth data which could be valid
-        bmf_auth_data: function() {
+        bmf_auth_data() {
             if ((this.pos.company.bmf_tid) && (this.pos.company.bmf_tid.length > 0) &&
                     (this.pos.company.bmf_benid) && (this.pos.company.bmf_benid.length > 0) &&
                     (this.pos.company.bmf_pin) && (this.pos.company.bmf_pin.length > 0) &&
@@ -469,12 +526,12 @@ odoo.define('pos_rksv.rksv', function (require) {
                 return true;
             else
                 return false;
-        },
-        update_bmf_rk_status: function() {
+        }
+        update_bmf_rk_status() {
             var self = this;
             // Check if the user provided us with bmf auth data - if not - then we can't read data from bmf
             if (!this.bmf_auth_data()) {
-                self.pos.set('bmf_status_rk', {
+                self.pos.env.proxy.set('bmf_status_rk', {
                     'success': false,
                     'connection': false,
                     'message': "Keine BMF Anmeldedaten hinterlegt, Status Abfrage ist nicht möglich !"
@@ -483,14 +540,14 @@ odoo.define('pos_rksv.rksv', function (require) {
             }
             // Check if we do have an active proxy connection - if not - then not update is possible
             if (!self.check_proxy_connection()) {
-                self.pos.set('bmf_status_rk', {
+                self.pos.env.proxy.set('bmf_status_rk', {
                     'success': false,
                     'connection': false,
                     'message': "Abfrage nicht möglich, PosBox ist nicht erreichbar !"
                 });
                 return false;
             }
-            self.pos.set('bmf_status_rk', {
+            self.pos.env.proxy.set('bmf_status_rk', {
                 'success': false,
                 'connection': true,
                 'message': "Abfrage gestartet..."
@@ -498,18 +555,21 @@ odoo.define('pos_rksv.rksv', function (require) {
             // Try to get new status
             this.bmf_status_rpc_call().then(
                 function done(response) {
-                    self.pos.set('bmf_status_rk', response);
+                    self.pos.env.proxy.set('bmf_status_rk', response);
+                    if (response.success) {
+                        self.pos.rksv.statuses['kasse'] = true;
+                    }
                 },
                 function failed(response) {
-                    self.pos.set('bmf_status_rk', {
+                    self.pos.env.proxy.set('bmf_status_rk', {
                         'success': false,
                         'connection': false,
                         'message': "Fehler bei der Kommunikation mit der PosBox!"
                     });
                 }
             );
-        },
-        rksv_reset_dep: function() {
+        }
+        rksv_reset_dep() {
             var self = this;
             var sprovider_popup = this.pos.gui.popup_instances.rksv_popup_widget;
             sprovider_popup.show({}, 'DEP zurücksetzen', 'Zurücksetzen');
@@ -526,7 +586,7 @@ odoo.define('pos_rksv.rksv', function (require) {
                             } else {
                                 // We need to receipt start receipt and other parameters
                                 sprovider_popup.success(response.message);
-                                self.pos.set('cashbox_mode', 'setup');
+                                self.pos.env.proxy.set('cashbox_mode', 'setup');
                             }
                         },
                         function failed() {
@@ -539,8 +599,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                 sprovider_popup.$('.execute_button').hide();
                 sprovider_popup.$('.close_button').show();
             });
-        },
-        rksv_write_dep_crypt_container: function() {
+        }
+        rksv_write_dep_crypt_container() {
             var self = this;
             var sprovider_popup = this.pos.gui.popup_instances.rksv_popup_widget;
             sprovider_popup.show({}, 'Crypt und DEP', 'Erzeugen');
@@ -587,8 +647,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                 sprovider_popup.$('.execute_button').hide();
                 sprovider_popup.$('.close_button').show();
             });
-        },
-        bmf_sprovider_ausfall: function(serial) {
+        }
+        bmf_sprovider_ausfall(serial) {
             var signature = this.pos.signatures.get(serial);
             var self = this;
             var sprovider_ausfall_popup = this.pos.gui.popup_instances.rksv_sprovider_ausfall_popup;
@@ -640,8 +700,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                 sprovider_ausfall_popup.$('.execute_button').hide();
                 sprovider_ausfall_popup.$('.close_button').show();
             });
-        },
-        bmf_sprovider_wiederinbetriebnahme: function(serial) {
+        }
+        bmf_sprovider_wiederinbetriebnahme(serial) {
             var signature = this.pos.signatures.get(serial);
             if (!signature) {
                 console.log('Unbekannte SE Seriennummer !');
@@ -691,8 +751,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                 sprovider_wiederinbetriebnahme_popup.$('.execute_button').hide();
                 sprovider_wiederinbetriebnahme_popup.$('.close_button').show();
             });
-        },
-        bmf_sprovider_status_rpc_call: function(serial) {
+        }
+        bmf_sprovider_status_rpc_call(serial) {
             var self = this;
             var local_params = {
                 'name': this.pos.config.name,
@@ -703,8 +763,8 @@ odoo.define('pos_rksv.rksv', function (require) {
                 Object.assign(local_params, self.get_rksv_info(), self.get_bmf_credentials()),
                 self.timeout
             );
-        },
-        bmf_register_start_receipt_rpc: function(){
+        }
+        bmf_register_start_receipt_rpc(){
             var self = this;
             var proxyDeferred = $.Deferred();
             if (!self.check_proxy_connection()) {
@@ -728,40 +788,42 @@ odoo.define('pos_rksv.rksv', function (require) {
                     }
             );
             return proxyDeferred;
-        },
-        bmf_register_start_receipt: function() {
-        },
+        }
+        bmf_register_start_receipt() {
+        }
         // starts catching keyboard events and tries to interpret codebar
         // calling the callbacks when needed.
-        connect: function () {
+        connect() {
             console.log('RKSV connect got called !');
-        },
+        }
         // stops catching keyboard events
-        disconnect: function () {
+        disconnect() {
             console.log('RKSV disconnect got called !');
-        },
+        }
         // the barcode scanner will listen on the hw_proxy/scanner interface for
         // scan events until disconnect_from_proxy is called
-        connect_to_proxy: function () {
+        connect_to_proxy() {
             console.log('RKSV connect to proxy got called !');
-        },
+        }
         // the barcode scanner will stop listening on the hw_proxy/scanner remote interface
-        disconnect_from_proxy: function () {
+        disconnect_from_proxy() {
             console.log('RKSV disconnect from proxy got called !');
-        },
-        rksv_wait: function() {
+        }
+        rksv_wait() {
             console.log('RKSV - Do pause the complete interface for the RKSV Operation');
             $('#rksv_waiting').removeClass('oe_hidden');
             window.onbeforeunload = function() {
                 return "Signatur wird gerade erstellt - Bitte NICHT neuladen !";
             };
-        },
-        rksv_done: function() {
+        }
+        rksv_done() {
             console.log('RKSV - Done');
             $('#rksv_waiting').addClass('oe_hidden');
             window.onbeforeunload = null;
-        },
-    });
+        }
+    }
+
+    Registries.Component.add(RKSV);
 
     return {
         RKSV: RKSV,
