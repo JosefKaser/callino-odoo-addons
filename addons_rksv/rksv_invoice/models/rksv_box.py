@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 import re
+from requests.exceptions import ConnectTimeout
 
 
 class RKSVBox(models.Model):
@@ -48,15 +49,20 @@ class RKSVBox(models.Model):
     def query_box(self, path, params={}):
         self.ensure_one()
         postData = self._getBasePostData(params=params)
-        response = requests.post('%s%s' % (self.host, path, ),
-                                 json=postData,
-                                 timeout=self.timeout,
-                                 verify=False
-                                 )
-        if response.status_code == 200:
-            return response.json()['result']
-        else:
-            raise UserError(response.text)
+        try:
+            response = requests.post('%s%s' % (self.host, path, ),
+                                     json=postData,
+                                     timeout=self.timeout,
+                                     verify=False
+                                     )
+            if response.status_code == 200:
+                return response.json()['result']
+            else:
+                raise UserError(response.text)
+        except ConnectTimeout:
+            raise UserError('Die RKSV Blackbox ist nicht erreichbar. Signatur kann nicht erstellt werden.')
+        except:
+            raise UserError('Es tratt ein Fehler bei der Kommunikation mit der RKSV Blackbox auf. Signatur kann nicht erstellt werden.')
 
     def button_query_box(self):
         '''
